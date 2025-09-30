@@ -23,4 +23,3 @@ class Log extends Model
         return $this->belongsTo(User::class, 'target_user_id');
     }
 }
-// ...existing code...

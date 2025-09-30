@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Log;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -50,13 +49,7 @@ class UserController extends Controller
             'ruolo' => 'required|in:admin,user',
         ]);
         $validated['password'] = bcrypt($validated['password']);
-        $user = User::create($validated);
-        Log::create([
-            'user_id' => auth()->id(),
-            'azione' => 'creazione',
-            'target_user_id' => $user->id,
-            'dettagli' => 'Creato utente: ' . $user->username,
-        ]);
+        User::create($validated);
         return redirect()->route('admin.users.index')->with('success', 'Utente creato con successo');
     }
 
@@ -95,12 +88,6 @@ class UserController extends Controller
             $validated['password'] = bcrypt($request->password);
         }
         $user->update($validated);
-        Log::create([
-            'user_id' => auth()->id(),
-            'azione' => 'modifica',
-            'target_user_id' => $user->id,
-            'dettagli' => 'Modificato utente: ' . $user->username,
-        ]);
         return redirect()->route('admin.users.index')->with('success', 'Utente aggiornato');
     }
 
@@ -109,24 +96,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        $username = $user->username;
-        $userId = $user->id;
         $user->delete();
-        Log::create([
-            'user_id' => auth()->id(),
-            'azione' => 'eliminazione',
-            'target_user_id' => $userId,
-            'dettagli' => 'Eliminato utente: ' . $username,
-        ]);
         return redirect()->route('admin.users.index')->with('success', 'Utente eliminato');
-    }
-
-    /**
-     * Display a listing of the logs.
-     */
-    public function logs()
-    {
-        $logs = \App\Models\Log::with(['user', 'targetUser'])->latest()->paginate(50);
-        return view('admin.users.logs', compact('logs'));
     }
 }

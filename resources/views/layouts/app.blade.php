@@ -104,17 +104,19 @@
                 <i class="bi bi-file-earmark-text-fill"></i> Report
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('eventi.index') }}"
+               class="nav-link {{ request()->routeIs('eventi.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar-event-fill"></i> Calendario
+            </a>
+        </li>
         @if(Auth::check() && Auth::user()->ruolo === 'admin')
             <li class="nav-item">
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                     <i class="bi bi-person-gear"></i> Gestione Utenti
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.users.logs') }}" class="nav-link {{ request()->routeIs('admin.users.logs') ? 'active' : '' }}">
-                    <i class="bi bi-journal-text"></i> Log azioni utenti
-                </a>
-            </li>
+
         @endif
     </ul>
     <div class="mt-auto p-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">

@@ -11,16 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('admin_logs', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('admin_id');
-            $table->string('azione', 32);
-            $table->unsignedBigInteger('target_user_id')->nullable();
-            $table->text('dettagli')->nullable();
-            $table->timestamps();
-            $table->foreign('admin_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('target_user_id')->references('id')->on('users')->onDelete('set null');
-        });
+        Schema::dropIfExists('admin_logs');
     }
 
     /**
@@ -28,6 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('admin_logs');
+        // Nessuna azione di rollback necessaria
     }
 };

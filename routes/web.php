@@ -18,7 +18,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('commesse', CommessaController::class)->parameters(['commesse' => 'commessa']);
     Route::resource('reports', ReportController::class);
     Route::resource('clienti', ClienteController::class)->parameters(['clienti' => 'cliente']);
+    Route::resource('eventi', \App\Http\Controllers\EventController::class);
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
     Route::get('/', function () {return view('home');})->name('home');
 
 
