@@ -17,7 +17,7 @@
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Rapporto N°</th>
                     <th>Commessa</th>
                     <th>Cliente</th>
                     <th>Tipo Prova</th>
@@ -28,7 +28,7 @@
                 <tbody>
                 @forelse($reports as $r)
                     <tr>
-                        <td>{{ $r->id }}</td>
+                        <td>{{ $r->rapporto_numero }}</td>
                         <td>{{ $r->commessa->codice ?? '-' }}</td>
                         <td>{{ $r->commessa->cliente->ragione_sociale ?? '-' }}</td>
                         <td>{{ ucfirst($r->tipo_prova) }}</td>
@@ -37,10 +37,12 @@
                             <a href="{{ route('reports.show', $r) }}" class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i>
                             </a>
-                            <form action="{{ route('reports.destroy', $r) }}" method="POST" class="d-inline">
+                            <a href="{{ route('reports.downloadPdf', $r) }}" class="btn btn-sm btn-success" target="_blank">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                            </a>
+                            <form action="{{ route('reports.destroy', $r) }}" method="POST" class="d-inline delete-report-form">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Eliminare questo report?')">
+                                <button type="submit" class="btn btn-sm btn-danger">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -53,4 +55,27 @@
             </table>
         </div>
     </div>
+@endsection
+
+@section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.querySelectorAll('.delete-report-form').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Sei sicuro?',
+                    text: 'Eliminare questo report?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sì, elimina',
+                    cancelButtonText: 'Annulla'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

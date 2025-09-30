@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 //usiamo maatwbiste/ecxel
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\DefaultImport;
+use PhpOffice\PhpWord\TemplateProcessor;
+use Dompdf\Dompdf;
+use Illuminate\Support\Facades\Storage;
 
 
 class ReportController extends Controller
@@ -17,18 +20,23 @@ class ReportController extends Controller
     // Step 1: scegli commessa
     public function createStep1()
     {
-        $commesse = Commessa::with('cliente')->orderBy('codice')->get();
-        return view('reports.wizard.step1', compact('commesse'));
+        $commesse = Commessa::with('cliente')->where('stato', '!=', 'chiusa')->orderBy('codice')->get();        // Calcola il rapporto_numero di default
+        $maxRapporto = Report::max('rapporto_numero');
+        // Se non ci sono report, parte da 1
+        $rapporto_numero_default = $maxRapporto ? ((int)$maxRapporto + 1) : 1;
+        return view('reports.wizard.step1', compact('commesse', 'rapporto_numero_default'));
     }
 
     public function postStep1(Request $request)
     {
         $request->validate([
             'commessa_id' => 'required|exists:commesse,id',
-            'data'       => 'required|date',
+            'data' => 'required|date',
             'data_accettazione_materiale' => 'required|date',
             'rif_ordine' => 'required|string|max:255',
-            'data_ordine'       => 'required|date',
+            'data_ordine' => 'required|date',
+            'rapporto_numero' => 'required|string|max:255',
+            'numero_revisione' => 'nullable|string|max:255',
         ]);
 
         session(['report_wizard.commessa_id' => $request->commessa_id]);
@@ -36,6 +44,8 @@ class ReportController extends Controller
         session(['report_wizard.data_accettazione_materiale' => $request->data_accettamento_materiale]);
         session(['report_wizard.rif_ordine' => $request->rif_ordine]);
         session(['report_wizard.data_ordine' => $request->data_ordine]);
+        session(['report_wizard.rapporto_numero' => $request->rapporto_numero]);
+        session(['report_wizard.numero_revisione' => $request->numero_revisione]);
         return redirect()->route('reports.wizard.step2');
     }
 
@@ -113,7 +123,7 @@ class ReportController extends Controller
                             $header = $foglio[0];
 
                             // elementi che ti servono davvero
-                            $wanted = ['C','Si','Mn','P','S','Cr','Ni','Mo','Al','Cu','Ti','Nb','V'];
+                            $wanted = ['C', 'Si', 'Mn', 'P', 'S', 'Cr', 'Ni', 'Mo', 'Al', 'Cu', 'Ti', 'Nb', 'V'];
 
                             // costruisci la mappa colonna → nome elemento
                             $map = [];
@@ -153,8 +163,11 @@ class ReportController extends Controller
 
                             // calcolo medie
                             $medie = [];
-                            foreach ($wanted as $colName) {
-                                $medie[$colName] = $count > 0 ? $somme[$colName] / $count : null;
+                            foreach ($wanted as $i => $colName) {
+                                $media = $count > 0 ? $somme[$colName] / $count : null;
+                                // Arrotondamento secondo regola
+                                $decimali = [3, 3, 3, 4, 4, 3, 3, 3, 3, 3, 4, 4, 4][$i];
+                                $medie[$colName] = $media !== null ? round($media, $decimali) : null;
                             }
 
                             // calcolo Ceq (formula IIW)
@@ -163,7 +176,10 @@ class ReportController extends Controller
                                     ($medie['C'] ?? 0) +
                                     (($medie['Mn'] ?? 0) / 6) +
                                     ((($medie['Cr'] ?? 0) + ($medie['Mo'] ?? 0) + ($medie['V'] ?? 0)) / 5) +
-                                    ((($medie['Ni'] ?? 0) + ($medie['Cu'] ?? 0)) / 15);
+                                    (($medie['Ni'] ?? 0) + ($medie['Cu'] ?? 0)) / 15;
+
+                                //arrotondamento a 4 decimali
+                                $medie['Ceq'] = round($medie['Ceq'], 4);
                             } else {
                                 $medie['Ceq'] = null;
                             }
@@ -276,13 +292,21 @@ class ReportController extends Controller
 
         $report = Report::create([
             'commessa_id' => $commessaId,
-            'tipo_prova'  => $tipo,
-            'dati'        => $reportData,
+            'tipo_prova' => $tipo,
+            'data' => session('report_wizard.data'),
+            'data_accettazione_materiale' => session('report_wizard.data_accettazione_materiale'),
+            'rif_ordine' => session('report_wizard.rif_ordine'),
+            'data_ordine' => session('report_wizard.data_ordine'),
+            'oggetto' => session('report_wizard.oggetto'),
+            'stato_fornitura' => session('report_wizard.stato_fornitura'),
+            'rapporto_numero' => session('report_wizard.rapporto_numero'),
+            'numero_revisione' => session('report_wizard.numero_revisione'),
+            'dati' => $reportData,
         ]);
 
         session()->forget('report_wizard');
-
-        return redirect()->route('reports.show', $report)->with('success', 'Report creato con successo.');
+        // Conferma pulizia sessione per la view
+        return redirect()->route('reports.show', $report)->with(['success' => 'Report creato con successo.', 'wizard_cleared' => true]);
     }
 
     /* ===== Index/Show (base) ===== */
@@ -304,4 +328,58 @@ class ReportController extends Controller
         $report->delete();
         return back()->with('success', 'Report eliminato.');
     }
+
+    public function downloadPdf(Report $report)
+    {
+        ini_set('memory_limit', '512M');
+        // Seleziona il template in base al tipo di prova
+        $templateMap = [
+            'chimica' => resource_path('templates/template_analisi_chimica.docx'),
+            'trazione' => resource_path('templates/template_trazione.docx'),
+            'resilienza' => resource_path('templates/template_resilienza.docx'),
+        ];
+        $tipo = $report->tipo_prova;
+        $templatePath = $templateMap[$tipo] ?? null;
+        if (!$templatePath || !file_exists($templatePath)) {
+            abort(404, 'Template Word per la prova "' . $tipo . '" non trovato');
+        }
+        try {
+            $templateProcessor = new TemplateProcessor($templatePath);
+        } catch (\Exception $e) {
+            abort(500, 'Errore nel caricamento del template Word: ' . $e->getMessage());
+        }
+        $dati = $report->dati;
+        $commessa = $report->commessa;
+        $cliente = $commessa->cliente ?? null;
+        $templateProcessor->setValue('commessa_descrizione', $commessa->descrizione ?? '-');
+        $templateProcessor->setValue('commessa_cliente', $cliente ? $cliente->ragione_sociale : '-');
+        $templateProcessor->setValue('data', $report->data ? date('d/m/Y', strtotime($report->data)) : '-');
+        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettazione_materiale ? date('d/m/Y', strtotime($report->data_accettamento_materiale)) : '-');
+        $templateProcessor->setValue('rif_ordine', $report->rif_ordine ?? '-');
+        $templateProcessor->setValue('data_ordine', $report->data_ordine ? date('d/m/Y', strtotime($report->data_ordine)) : '-');
+        $templateProcessor->setValue('oggetto', $report->oggetto ?? '-');
+        $templateProcessor->setValue('stato_fornitura', $report->stato_fornitura ?? '-');
+        $templateProcessor->setValue('rapporto_numero', $report->rapporto_numero ?? '-');
+        $templateProcessor->setValue('numero_revisione', $report->numero_revisione ?? '-');
+        // Dati specifici per tipo di prova
+        // Medie chimiche (solo se presenti)
+        if (isset($dati['medie_chimica'])) {
+            foreach ($dati['medie_chimica'] as $elemento => $valore) {
+                $templateProcessor->setValue($elemento, $valore !== null ? $valore : '-');
+            }
+        }
+        // Puoi aggiungere qui altri placeholder specifici per trazione/resilienza se servono
+        $wordTemp = storage_path('app/temp_report.docx');
+        try {
+            $templateProcessor->saveAs($wordTemp);
+        } catch (\Exception $e) {
+            abort(500, 'Errore nel salvataggio del file Word temporaneo: ' . $e->getMessage());
+        }
+        if (!file_exists($wordTemp)) {
+            abort(500, 'File Word temporaneo non creato.');
+        }
+        return response()->download($wordTemp, 'report_cliente_'.$report->id.'.docx')->deleteFileAfterSend(true);
+    }
+
+
 }

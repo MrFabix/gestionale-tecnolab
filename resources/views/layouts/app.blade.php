@@ -81,7 +81,9 @@
 {{-- Sidebar --}}
 <div class="sidebar">
     <div class="brand">
-        {{ config('app.name') }}
+        <a href="{{ route('home') }}">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo" style="max-width:200px; max-height:120px;">
+        </a>
     </div>
     <ul class="nav flex-column mt-3">
         <li class="nav-item">
@@ -102,6 +104,18 @@
                 <i class="bi bi-file-earmark-text-fill"></i> Report
             </a>
         </li>
+        @if(Auth::check() && Auth::user()->ruolo === 'admin')
+            <li class="nav-item">
+                <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <i class="bi bi-person-gear"></i> Gestione Utenti
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('admin.users.logs') }}" class="nav-link {{ request()->routeIs('admin.users.logs') ? 'active' : '' }}">
+                    <i class="bi bi-journal-text"></i> Log azioni utenti
+                </a>
+            </li>
+        @endif
     </ul>
     <div class="mt-auto p-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
         @auth
@@ -110,6 +124,7 @@
                 <div>
                     <strong class="d-block text-white">{{ Auth::user()->name }}</strong>
                     <small class="text-muted">{{ Auth::user()->username }}</small>
+                    <span class="badge bg-primary ms-1">{{ Auth::user()->ruolo }}</span>
                 </div>
             </div>
             <div class="d-flex flex-column">

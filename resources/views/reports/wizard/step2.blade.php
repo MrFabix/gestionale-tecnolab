@@ -8,9 +8,9 @@
         <div class="mb-3">
             <label class="form-label">Tipo di prova</label>
             <select name="tipo_prova" class="form-select" required>
-                <option value="resilienza">Resilienza</option>
-                <option value="trazione">Trazione</option>
-                <option value="chimica">Analisi Chimica</option>
+                <option value="resilienza" {{ session('report_wizard.tipo_prova') == 'resilienza' ? 'selected' : '' }}>Resilienza</option>
+                <option value="trazione" {{ session('report_wizard.tipo_prova') == 'trazione' ? 'selected' : '' }}>Trazione</option>
+                <option value="chimica" {{ session('report_wizard.tipo_prova') == 'chimica' ? 'selected' : '' }}>Analisi Chimica</option>
             </select>
             @error('tipo_prova') <div class="text-danger small">{{ $message }}</div> @enderror
         </div>

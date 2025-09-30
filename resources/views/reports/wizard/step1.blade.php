@@ -45,6 +45,18 @@
                 </div>
             </div>
         </div>
+        <div class="row align-items-center mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Rapporto N°</label>
+                    <input  type="text" name="rapporto_numero" class="form-control" value="{{ session('report_wizard.rapporto_numero', $rapporto_numero_default) }}" required>
+                    @error('rapporto_numero') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Numero revisione</label>
+                    <input type="text" name="numero_revisione" class="form-control" value="{{ session('report_wizard.numero_revisione') ?? 0 }}" required>
+                    @error('numero_revisione') <div class="text-danger small">{{ $message }}</div> @enderror
+                </div>
+            </div>
 
         <div class="d-flex justify-content-between">
             <a href="{{ route('reports.index') }}" class="btn btn-secondary">Annulla</a>

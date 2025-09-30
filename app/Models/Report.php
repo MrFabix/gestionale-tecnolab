@@ -6,8 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Report extends Model
 {
-    protected $fillable = ['commessa_id','tipo_prova','dati'];
-    protected $casts = ['dati' => 'array'];
+    protected $fillable = [
+        'commessa_id',
+        'tipo_prova',
+        'dati',
+        'data',
+        'data_accettazione_materiale',
+        'rif_ordine',
+        'data_ordine',
+        'oggetto',
+        'stato_fornitura',
+        'rapporto_numero',
+        'numero_revisione'
+    ];
+    protected $casts = [
+        'dati' => 'array',
+        'data' => 'date',
+        'data_accettazione_materiale' => 'date',
+        'data_ordine' => 'date',
+    ];
 
     public function commessa()
     {

@@ -3,6 +3,10 @@
 @section('content')
     <h1>Report #{{ $report->id }}</h1>
 
+    @if(session('wizard_cleared'))
+        <div class="alert alert-success">Dati del wizard puliti correttamente.</div>
+    @endif
+
     <div class="card mb-3">
         <div class="card-body">
             <div class="row">
@@ -155,6 +159,8 @@
             @endif
         </div>
     </div>
+
+
 
     <div class="mt-3 d-flex gap-2">
         <a href="{{ route('reports.index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Indietro</a>
