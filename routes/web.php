@@ -16,7 +16,7 @@ Auth::routes(['register' => false]);
 //route da autentificato
 Route::middleware(['auth'])->group(function () {
     Route::resource('commesse', CommessaController::class)->parameters(['commesse' => 'commessa']);
-    Route::resource('reports', ReportController::class);
+    Route::resource('reports', ReportController::class); // resource completa
     Route::resource('clienti', ClienteController::class)->parameters(['clienti' => 'cliente']);
     Route::resource('eventi', \App\Http\Controllers\EventController::class);
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -35,8 +35,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('step3', [ReportController::class, 'postStep3'])->name('step3.post');
     });
 
-    // Index/Show/Destroy (no create/store perché usiamo wizard)
-    Route::resource('reports', ReportController::class)->only(['index','show','destroy']);
+    // Wizard Modifica Report
+    Route::prefix('reports/{report}/edit-wizard')->name('reports.editwizard.')->group(function () {
+        Route::get('step1', [ReportController::class, 'editStep1'])->name('step1');
+        Route::post('step1', [ReportController::class, 'updateStep1'])->name('step1.post');
+        Route::get('step2', [ReportController::class, 'editStep2'])->name('step2');
+        Route::post('step2', [ReportController::class, 'updateStep2'])->name('step2.post');
+        Route::get('step3', [ReportController::class, 'editStep3'])->name('step3');
+        Route::post('step3', [ReportController::class, 'updateStep3'])->name('step3.post');
+    });
+
     Route::get('/reports/{report}/download-pdf', [\App\Http\Controllers\ReportController::class, 'downloadPdf'])->name('reports.downloadPdf');
 });
 

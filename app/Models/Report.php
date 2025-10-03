@@ -17,7 +17,8 @@ class Report extends Model
         'oggetto',
         'stato_fornitura',
         'rapporto_numero',
-        'numero_revisione'
+        'numero_revisione',
+        'stato'
     ];
     protected $casts = [
         'dati' => 'array',

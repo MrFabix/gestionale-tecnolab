@@ -21,6 +21,7 @@
                     <th>Commessa</th>
                     <th>Cliente</th>
                     <th>Tipo Prova</th>
+                    <th>Stato</th>
                     <th>Creato il</th>
                     <th></th>
                 </tr>
@@ -32,8 +33,21 @@
                         <td>{{ $r->commessa->codice ?? '-' }}</td>
                         <td>{{ $r->commessa->cliente->ragione_sociale ?? '-' }}</td>
                         <td>{{ ucfirst($r->tipo_prova) }}</td>
-                        <td>{{ $r->created_at->format('d/m/Y H:i') }}</td>
+                        <td>
+                            @if($r->stato === 'bozza')
+                                <span class="badge bg-secondary">Bozza</span>
+                            @elseif($r->stato === 'completo')
+                                <span class="badge bg-success">Completo</span>
+                            @else
+                                {{ $r->stato }}
+                            @endif
+                        </td>
+                                               <td>{{ $r->created_at->format('d/m/Y H:i') }}</td>
                         <td class="text-nowrap">
+                            <a href="{{ route('reports.editwizard.step1', $r) }}" class="btn btn-sm btn-warning" title="Modifica (Wizard)">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
                             <a href="{{ route('reports.show', $r) }}" class="btn btn-sm btn-info">
                                 <i class="bi bi-eye"></i>
                             </a>
@@ -49,7 +63,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center">Nessun report presente.</td></tr>
+                    <tr><td colspan="7" class="text-center">Nessun report presente.</td></tr>
                 @endforelse
                 </tbody>
             </table>

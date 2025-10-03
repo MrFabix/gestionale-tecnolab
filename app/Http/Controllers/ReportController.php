@@ -20,6 +20,7 @@ class ReportController extends Controller
     // Step 1: scegli commessa
     public function createStep1()
     {
+        session()->forget('report_wizard'); // Svuota la sessione all'inizio della creazione
         $commesse = Commessa::with('cliente')->where('stato', '!=', 'chiusa')->orderBy('codice')->get();        // Calcola il rapporto_numero di default
         $maxRapporto = Report::max('rapporto_numero');
         // Se non ci sono report, parte da 1
@@ -41,7 +42,9 @@ class ReportController extends Controller
 
         session(['report_wizard.commessa_id' => $request->commessa_id]);
         session(['report_wizard.data' => $request->data]);
-        session(['report_wizard.data_accettazione_materiale' => $request->data_accettamento_materiale]);
+        if ($request->filled('data_accettazione_materiale')) {
+            session(['report_wizard.data_accettazione_materiale' => $request->data_accettazione_materiale]);
+        }
         session(['report_wizard.rif_ordine' => $request->rif_ordine]);
         session(['report_wizard.data_ordine' => $request->data_ordine]);
         session(['report_wizard.rapporto_numero' => $request->rapporto_numero]);
@@ -302,6 +305,7 @@ class ReportController extends Controller
             'rapporto_numero' => session('report_wizard.rapporto_numero'),
             'numero_revisione' => session('report_wizard.numero_revisione'),
             'dati' => $reportData,
+            'stato' => 'completo',
         ]);
 
         session()->forget('report_wizard');
@@ -354,7 +358,7 @@ class ReportController extends Controller
         $templateProcessor->setValue('commessa_descrizione', $commessa->descrizione ?? '-');
         $templateProcessor->setValue('commessa_cliente', $cliente ? $cliente->ragione_sociale : '-');
         $templateProcessor->setValue('data', $report->data ? date('d/m/Y', strtotime($report->data)) : '-');
-        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettazione_materiale ? date('d/m/Y', strtotime($report->data_accettamento_materiale)) : '-');
+        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettazione_materiale ? date('d/m/Y', strtotime($report->data_accettazione_materiale)) : '-');
         $templateProcessor->setValue('rif_ordine', $report->rif_ordine ?? '-');
         $templateProcessor->setValue('data_ordine', $report->data_ordine ? date('d/m/Y', strtotime($report->data_ordine)) : '-');
         $templateProcessor->setValue('oggetto', $report->oggetto ?? '-');
@@ -382,4 +386,188 @@ class ReportController extends Controller
     }
 
 
+    /**
+     * Mostra il form di modifica di un report.
+     */
+    public function edit(Report $report)
+    {
+        // Recupera eventuali dati correlati (es: commesse per select)
+        $commesse = \App\Models\Commessa::with('cliente')->orderBy('codice')->get();
+        return view('reports.edit', compact('report', 'commesse'));
+    }
+
+    /**
+     * Aggiorna il report nel database.
+     */
+    public function update(Request $request, Report $report)
+    {
+        $request->validate([
+            'commessa_id' => 'required|exists:commesse,id',
+            'tipo_prova' => 'required|string|max:255',
+            'data' => 'nullable|date',
+            'data_accettazione_materiale' => 'nullable|date',
+            'rif_ordine' => 'nullable|string|max:255',
+            'data_ordine' => 'nullable|date',
+            'oggetto' => 'nullable|string|max:255',
+            'stato_fornitura' => 'nullable|string|max:255',
+            'rapporto_numero' => 'nullable|string|max:255',
+            'numero_revisione' => 'nullable|string|max:255',
+        ]);
+        $report->update($request->only([
+            'commessa_id',
+            'tipo_prova',
+            'data',
+            'data_accettazione_materiale',
+            'rif_ordine',
+            'data_ordine',
+            'oggetto',
+            'stato_fornitura',
+            'rapporto_numero',
+            'numero_revisione',
+        ]));
+        return redirect()->route('reports.index')->with('success', 'Report aggiornato con successo.');
+    }
+
+    // ===== Wizard Modifica Report =====
+    public function editStep1(Report $report)
+    {
+        session()->forget('report_edit_wizard'); // Svuota la sessione all'inizio della modifica
+        $commesse = Commessa::with('cliente')->where('stato', '!=', 'chiusa')->orderBy('codice')->get();
+        return view('reports.wizard.step1', [
+            'commesse' => $commesse,
+            'rapporto_numero_default' => $report->rapporto_numero,
+            'report' => $report,
+            'editMode' => true
+        ]);
+    }
+    public function updateStep1(Request $request, Report $report)
+    {
+        $request->validate([
+            'commessa_id' => 'required|exists:commesse,id',
+            'data' => 'required|date',
+            'data_accettazione_materiale' => 'required|date',
+            'rif_ordine' => 'required|string|max:255',
+            'data_ordine' => 'required|date',
+            'rapporto_numero' => 'required|string|max:255',
+            'numero_revisione' => 'nullable|string|max:255',
+        ]);
+        session(['report_edit_wizard.commessa_id' => $request->commessa_id]);
+        session(['report_edit_wizard.data' => $request->data]);
+        session(['report_edit_wizard.data_accettazione_materiale' => $request->data_accettazione_materiale]);
+        session(['report_edit_wizard.rif_ordine' => $request->rif_ordine]);
+        session(['report_edit_wizard.data_ordine' => $request->data_ordine]);
+        session(['report_edit_wizard.rapporto_numero' => $request->rapporto_numero]);
+        session(['report_edit_wizard.numero_revisione' => $request->numero_revisione]);
+        return redirect()->route('reports.editwizard.step2', $report);
+    }
+    public function editStep2(Report $report)
+    {
+        return view('reports.wizard.step2', [
+            'report' => $report,
+            'editMode' => true
+        ]);
+    }
+    public function updateStep2(Request $request, Report $report)
+    {
+        $request->validate([
+            'tipo_prova' => 'required|in:resilienza,trazione,chimica',
+            'oggetto' => 'required|string|max:255',
+            'stato_fornitura' => 'required|string|max:255',
+        ]);
+        session(['report_edit_wizard.tipo_prova' => $request->tipo_prova]);
+        session(['report_edit_wizard.oggetto' => $request->oggetto]);
+        session(['report_edit_wizard.stato_fornitura' => $request->stato_fornitura]);
+        return redirect()->route('reports.editwizard.step3', $report);
+    }
+    public function editStep3(Report $report)
+    {
+        $tipo = session('report_edit_wizard.tipo_prova', $report->tipo_prova);
+        return view('reports.wizard.step3', [
+            'tipo' => $tipo,
+            'report' => $report,
+            'editMode' => true
+        ]);
+    }
+    public function updateStep3(Request $request, Report $report)
+    {
+        // Validazione dinamica come nel wizard di creazione
+        $tipo = session('report_edit_wizard.tipo_prova', $report->tipo_prova);
+        $rules = [];
+        switch ($tipo) {
+            case 'resilienza':
+                $rules = [
+                    'provini' => 'required|array|min:1|max:3',
+                    'provini.*.codice' => 'nullable|string|max:50',
+                    'provini.*.tipo' => 'nullable|string|max:50',
+                    'provini.*.direzione' => 'nullable|string|max:50',
+                    'provini.*.spessore_mm' => 'nullable|numeric',
+                    'provini.*.larghezza_mm' => 'nullable|numeric',
+                    'provini.*.lunghezza_mm' => 'nullable|numeric',
+                    'provini.*.temperatura_C' => 'nullable|numeric',
+                    'provini.*.energia_J' => 'nullable|numeric',
+                    'provini.*.media_J' => 'nullable|numeric',
+                    'provini.*.area_duttile_percent' => 'nullable|numeric',
+                    'provini.*.espansione_laterale_mm' => 'nullable|numeric',
+                    'note' => 'nullable|string|max:1000',
+                ];
+                break;
+            case 'trazione':
+                $rules = [
+                    'trazione' => 'required|array',
+                    'trazione.codice' => 'nullable|string|max:50',
+                    'trazione.tipo' => 'nullable|string|max:50',
+                    'trazione.spessore' => 'nullable|numeric',
+                    'trazione.larghezza' => 'nullable|numeric',
+                    'trazione.area' => 'nullable|numeric',
+                    'trazione.lunghezza' => 'nullable|numeric',
+                    'trazione.temperatura' => 'nullable|numeric',
+                    'trazione.snervamento' => 'nullable|numeric',
+                    'trazione.resistenza' => 'nullable|numeric',
+                    'trazione.allungamento' => 'nullable|numeric',
+                    'trazione.strizione' => 'nullable|numeric',
+                    'note' => 'nullable|string|max:1000',
+                ];
+                break;
+            case 'chimica':
+                $rules = [
+                    'chimica' => 'required|array',
+                    'chimica.codice' => 'nullable|string|max:50',
+                    'chimica.temperatura' => 'nullable|numeric',
+                    'chimica.C' => 'nullable|numeric',
+                    'chimica.Si' => 'nullable|numeric',
+                    'chimica.Mn' => 'nullable|numeric',
+                    'chimica.P' => 'nullable|numeric',
+                    'chimica.S' => 'nullable|numeric',
+                    'chimica.Cr' => 'nullable|numeric',
+                    'chimica.Mo' => 'nullable|numeric',
+                    'chimica.Ni' => 'nullable|numeric',
+                    'chimica.Cu' => 'nullable|numeric',
+                    'chimica.Al' => 'nullable|numeric',
+                    'chimica.Nb' => 'nullable|numeric',
+                    'chimica.Ti' => 'nullable|numeric',
+                    'chimica.V' => 'nullable|numeric',
+                    'chimica.Ceq' => 'nullable|numeric',
+                    'note' => 'nullable|string|max:1000',
+                ];
+                break;
+        }
+        $validated = $request->validate($rules);
+        $reportData = $validated;
+        // Aggiorna il report con tutti i dati raccolti nei 3 step
+        $report->update([
+            'commessa_id' => session('report_edit_wizard.commessa_id', $report->commessa_id),
+            'tipo_prova' => session('report_edit_wizard.tipo_prova', $report->tipo_prova),
+            'data' => session('report_edit_wizard.data', $report->data),
+            'data_accettazione_materiale' => session('report_edit_wizard.data_accettazione_materiale', $report->data_accettazione_materiale),
+            'rif_ordine' => session('report_edit_wizard.rif_ordine', $report->rif_ordine),
+            'data_ordine' => session('report_edit_wizard.data_ordine', $report->data_ordine),
+            'oggetto' => session('report_edit_wizard.oggetto', $report->oggetto),
+            'stato_fornitura' => session('report_edit_wizard.stato_fornitura', $report->stato_fornitura),
+            'rapporto_numero' => session('report_edit_wizard.rapporto_numero', $report->rapporto_numero),
+            'numero_revisione' => session('report_edit_wizard.numero_revisione', $report->numero_revisione),
+            'dati' => $reportData,
+        ]);
+        session()->forget('report_edit_wizard');
+        return redirect()->route('reports.index')->with('success', 'Report modificato con successo.');
+    }
 }
