@@ -92,7 +92,7 @@
         </form>
     </div>
     <div class="footer">
-        &copy; {{ date('Y') }} {{ config('app.name') }} &mdash; Tutti i diritti riservati
+        &copy; {{ date('Y') }} {{ config('app.name') }} &mdash; Tutti i diritti riservati.
     </div>
 </div>
 </body>
