@@ -1,10 +1,8 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/tecnolab/webapp.tecnolabroma.it
-    # copia tutto tranne la cartella public
-    - /bin/rsync -av --exclude='.git' --exclude='public' ./ $DEPLOYPATH
-    # copia solo il contenuto di public dentro la public effettiva
-    - /bin/rsync -av public/ $DEPLOYPATH/public
+    - /bin/rsync -av --exclude='.git' ./ $DEPLOYPATH
+    - /bin/rsync -av ./public/ $DEPLOYPATH/public
     - cd $DEPLOYPATH
     - /usr/local/bin/php artisan config:clear
     - /usr/local/bin/php artisan cache:clear
