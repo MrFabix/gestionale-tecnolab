@@ -18,9 +18,9 @@
         }
         .login-card {
             width: 420px;
-            border: 2px solid #4e73df;
+            border: 2px solid #b71c1c;
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(78,115,223,0.15);
+            box-shadow: 0 8px 32px rgba(183,28,28,0.15);
             background: #fff;
             padding: 2.5rem 2rem 2rem 2rem;
             position: relative;
@@ -29,7 +29,7 @@
             text-align: center;
             margin-bottom: 1.5rem;
             font-weight: 700;
-            color: #4e73df;
+            color: #b71c1c;
         }
         .login-logo {
             display: block;
@@ -38,14 +38,14 @@
             height: 64px;
         }
         .btn-primary {
-            background: linear-gradient(90deg, #4e73df 0%, #1cc88a 100%);
+            background: linear-gradient(90deg, #b71c1c 0%, #212121 100%);
             border: none;
             font-weight: 600;
             transition: box-shadow 0.2s;
         }
         .btn-primary:hover {
-            box-shadow: 0 4px 16px rgba(78,115,223,0.2);
-            background: linear-gradient(90deg, #1cc88a 0%, #4e73df 100%);
+            box-shadow: 0 4px 16px rgba(183,28,28,0.2);
+            background: linear-gradient(90deg, #212121 0%, #b71c1c 100%);
         }
         .form-check-label {
             font-size: 0.95rem;
@@ -61,7 +61,7 @@
 <body>
 <div>
     <div class="login-card">
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo" class="login-logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo" class="login-logo" style="filter: grayscale(100%) brightness(0.5) sepia(1) hue-rotate(-20deg) saturate(8);">
         <h3>Login</h3>
         <form method="POST" action="{{ route('login') }}">
             @csrf
