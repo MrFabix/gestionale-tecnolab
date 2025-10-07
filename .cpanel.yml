@@ -1,14 +1,30 @@
 deployment:
   tasks:
+    # Imposta il path di deploy
     - export DEPLOYPATH=/home/tecnolab/webapp.tecnolabroma.it
-    - /bin/rsync -av --exclude='.git' ./ $DEPLOYPATH
+
+    # Copia tutto il progetto (senza la repo .git e senza vendor locale)
+    - /bin/rsync -av --exclude='.git' --exclude='vendor' ./ $DEPLOYPATH
+
+    # Copia SEMPRE il contenuto della cartella public/ nella /public del DEPLOYPATH
     - /bin/rsync -av ./public/ $DEPLOYPATH/public
+
+    # Vai nella cartella di deploy
     - cd $DEPLOYPATH
-    - /usr/local/bin/php artisan config:clear
-    - /usr/local/bin/php artisan cache:clear
-    - /usr/local/bin/php artisan route:clear
-    - /usr/local/bin/php artisan view:clear
+
+    # Installa dipendenze PHP (in produzione, senza dev)
+    - /usr/local/bin/composer install --no-dev --optimize-autoloader
+
+    # Permessi corretti per cache e storage
+    - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
+
+    # Pulisci tutte le cache Laravel
+    - /usr/local/bin/php artisan optimize:clear
+
+    # Ricrea le cache (opzionale, utile in prod)
     - /usr/local/bin/php artisan config:cache
     - /usr/local/bin/php artisan route:cache
     - /usr/local/bin/php artisan view:cache
+
+    # Esegui migration
     - /usr/local/bin/php artisan migrate --force
