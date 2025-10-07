@@ -18,13 +18,17 @@ class Report extends Model
         'stato_fornitura',
         'rapporto_numero',
         'numero_revisione',
-        'stato'
+        'stato',
+        'data_inizio',
+        'data_fine'
     ];
     protected $casts = [
         'dati' => 'array',
         'data' => 'date',
         'data_accettazione_materiale' => 'date',
         'data_ordine' => 'date',
+        'data_inizio' => 'date',
+        'data_fine' => 'date',
     ];
 
     public function commessa()

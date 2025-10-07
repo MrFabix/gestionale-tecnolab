@@ -66,11 +66,15 @@ class ReportController extends Controller
             'tipo_prova' => 'required|in:resilienza,trazione,chimica',
             'oggetto' => 'required|string|max:255',
             'stato_fornitura' => 'required|string|max:255',
+            'data_inizio' => 'required|date',
+            'data_fine' => 'required|date|after_or_equal:data_inizio',
         ]);
 
         session(['report_wizard.tipo_prova' => $request->tipo_prova]);
         session(['report_wizard.oggetto' => $request->oggetto]);
         session(['report_wizard.stato_fornitura' => $request->stato_fornitura]);
+        session(['report_wizard.data_inizio' => $request->data_inizio]);
+        session(['report_wizard.data_fine' => $request->data_fine]);
         if ($request->hasFile('excel_file') && $request->file('excel_file')->isValid()) {
             $path = $request->file('excel_file')->store('reports/temp', 'public');
             session(['report_wizard.excel_file' => $path]);
@@ -304,6 +308,8 @@ class ReportController extends Controller
             'stato_fornitura' => session('report_wizard.stato_fornitura'),
             'rapporto_numero' => session('report_wizard.rapporto_numero'),
             'numero_revisione' => session('report_wizard.numero_revisione'),
+            'data_inizio' => session('report_wizard.data_inizio'),
+            'data_fine' => session('report_wizard.data_fine'),
             'dati' => $reportData,
             'stato' => 'completo',
         ]);
@@ -335,6 +341,8 @@ class ReportController extends Controller
 
     public function downloadPdf(Report $report)
     {
+
+
         ini_set('memory_limit', '512M');
         // Seleziona il template in base al tipo di prova
         $templateMap = [
@@ -357,18 +365,25 @@ class ReportController extends Controller
         $cliente = $commessa->cliente ?? null;
         $templateProcessor->setValue('commessa_descrizione', $commessa->descrizione ?? '-');
         $templateProcessor->setValue('commessa_cliente', $cliente ? $cliente->ragione_sociale : '-');
+        $templateProcessor->setValue('indirizzo_cliente', $cliente ? ($cliente->indirizzo  ?? '-') : '-');
+        $templateProcessor->setValue('citta_cliente', $cliente ? ($cliente->cap . ' - ' . $cliente->citta  ?? '') : '-');
+        //citta - cap
+        $templateProcessor->setValue('citta_cliente', $cliente ? ($cliente->cap . ' ' . $cliente->citta . ' (' . $cliente->provincia . ')' ?? '-') : '-');
         $templateProcessor->setValue('data', $report->data ? date('d/m/Y', strtotime($report->data)) : '-');
-        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettazione_materiale ? date('d/m/Y', strtotime($report->data_accettazione_materiale)) : '-');
+        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettamento_materiale ? date('d/m/Y', strtotime($report->data_accettamento_materiale)) : '-');
         $templateProcessor->setValue('rif_ordine', $report->rif_ordine ?? '-');
         $templateProcessor->setValue('data_ordine', $report->data_ordine ? date('d/m/Y', strtotime($report->data_ordine)) : '-');
         $templateProcessor->setValue('oggetto', $report->oggetto ?? '-');
         $templateProcessor->setValue('stato_fornitura', $report->stato_fornitura ?? '-');
         $templateProcessor->setValue('rapporto_numero', $report->rapporto_numero ?? '-');
-        $templateProcessor->setValue('numero_revisione', $report->numero_revisione ?? '-');
+        $templateProcessor->setValue('numero_revisione', $report->numero_revisione ?? '0');
+        $templateProcessor->setValue('data_inizio', $report->data_inizio ? date('d/m/Y', strtotime($report->data_inizio)) : '-');
+        $templateProcessor->setValue('data_fine', $report->data_fine ? date('d/m/Y', strtotime($report->data_fine)) : '-');
+
         // Dati specifici per tipo di prova
         // Medie chimiche (solo se presenti)
-        if (isset($dati['medie_chimica'])) {
-            foreach ($dati['medie_chimica'] as $elemento => $valore) {
+        if (isset($dati['chimica'])) {
+            foreach ($dati['chimica'] as $elemento => $valore) {
                 $templateProcessor->setValue($elemento, $valore !== null ? $valore : '-');
             }
         }
@@ -412,6 +427,8 @@ class ReportController extends Controller
             'stato_fornitura' => 'nullable|string|max:255',
             'rapporto_numero' => 'nullable|string|max:255',
             'numero_revisione' => 'nullable|string|max:255',
+            'data_inizio' => 'nullable|date',
+            'data_fine' => 'nullable|date',
         ]);
         $report->update($request->only([
             'commessa_id',
@@ -424,7 +441,9 @@ class ReportController extends Controller
             'stato_fornitura',
             'rapporto_numero',
             'numero_revisione',
-        ]));
+            'data_inizio',
+            'data_fine',
+        ]) + ['stato' => 'completo']);
         return redirect()->route('reports.index')->with('success', 'Report aggiornato con successo.');
     }
 
@@ -473,10 +492,14 @@ class ReportController extends Controller
             'tipo_prova' => 'required|in:resilienza,trazione,chimica',
             'oggetto' => 'required|string|max:255',
             'stato_fornitura' => 'required|string|max:255',
+            'data_inizio' => 'required|date',
+            'data_fine' => 'required|date|after_or_equal:data_inizio',
         ]);
         session(['report_edit_wizard.tipo_prova' => $request->tipo_prova]);
         session(['report_edit_wizard.oggetto' => $request->oggetto]);
         session(['report_edit_wizard.stato_fornitura' => $request->stato_fornitura]);
+        session(['report_edit_wizard.data_inizio' => $request->data_inizio]);
+        session(['report_edit_wizard.data_fine' => $request->data_fine]);
         return redirect()->route('reports.editwizard.step3', $report);
     }
     public function editStep3(Report $report)
@@ -558,13 +581,15 @@ class ReportController extends Controller
             'commessa_id' => session('report_edit_wizard.commessa_id', $report->commessa_id),
             'tipo_prova' => session('report_edit_wizard.tipo_prova', $report->tipo_prova),
             'data' => session('report_edit_wizard.data', $report->data),
-            'data_accettazione_materiale' => session('report_edit_wizard.data_accettazione_materiale', $report->data_accettazione_materiale),
+            'data_accettazione_materiale' => session('report_edit_wizard.data_accettamento_materiale', $report->data_accettamento_materiale),
             'rif_ordine' => session('report_edit_wizard.rif_ordine', $report->rif_ordine),
             'data_ordine' => session('report_edit_wizard.data_ordine', $report->data_ordine),
             'oggetto' => session('report_edit_wizard.oggetto', $report->oggetto),
             'stato_fornitura' => session('report_edit_wizard.stato_fornitura', $report->stato_fornitura),
             'rapporto_numero' => session('report_edit_wizard.rapporto_numero', $report->rapporto_numero),
             'numero_revisione' => session('report_edit_wizard.numero_revisione', $report->numero_revisione),
+            'data_inizio' => session('report_edit_wizard.data_inizio', $report->data_inizio),
+            'data_fine' => session('report_edit_wizard.data_fine', $report->data_fine),
             'dati' => $reportData,
         ]);
         session()->forget('report_edit_wizard');

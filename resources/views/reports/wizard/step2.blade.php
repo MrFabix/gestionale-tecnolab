@@ -28,6 +28,17 @@
         </div>
 
         <div class="mb-3">
+            <label class="form-label">Data Inizio</label>
+            <input type="date" name="data_inizio" class="form-control" value="{{ isset($editMode) && $editMode ? old('data_inizio', session('report_edit_wizard.data_inizio', isset($report->data_inizio) ? $report->data_inizio->format('Y-m-d') : '')) : session('report_wizard.data_inizio') }}">
+            @error('data_inizio') <div class="text-danger small">{{ $message }}</div> @enderror
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Data Fine</label>
+            <input type="date" name="data_fine" class="form-control" value="{{ isset($editMode) && $editMode ? old('data_fine', session('report_edit_wizard.data_fine', isset($report->data_fine) ? $report->data_fine->format('Y-m-d') : '')) : session('report_wizard.data_fine') }}">
+            @error('data_fine') <div class="text-danger small">{{ $message }}</div> @enderror
+        </div>
+
+        <div class="mb-3">
             <label for="excel_file" class="form-label">Carica Excel (opzionale)</label>
             <input type="file" name="excel_file" id="excel_file" class="form-control" accept=".xlsx,.xls,.csv">
         </div>
@@ -37,4 +48,5 @@
             <button type="submit" class="btn btn-primary">Avanti</button>
         </div>
     </form>
+
 @endsection
