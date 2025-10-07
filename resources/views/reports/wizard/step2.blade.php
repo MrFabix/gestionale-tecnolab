@@ -38,10 +38,7 @@
             @error('data_fine') <div class="text-danger small">{{ $message }}</div> @enderror
         </div>
 
-        <div class="mb-3">
-            <label for="excel_file" class="form-label">Carica Excel (opzionale)</label>
-            <input type="file" name="excel_file" id="excel_file" class="form-control" accept=".xlsx,.xls,.csv">
-        </div>
+
 
         <div class="d-flex justify-content-between">
             <a href="{{ isset($editMode) && $editMode ? route('reports.editwizard.step1', $report) : route('reports.wizard.step1') }}" class="btn btn-outline-secondary">Indietro</a>

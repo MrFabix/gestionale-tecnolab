@@ -36,31 +36,32 @@
                                     <th>Larghezza (mm)</th>
                                     <th>Lunghezza (mm)</th>
                                     <th>Temperatura (°C)</th>
-                                    <th>Energia (J)</th>
-                                    <th>Media (J)</th>
+                                    <th>Energia assorbita (J)</th>
+                                    <th>Media energia (J)</th>
                                     <th>Area duttile (%)</th>
-                                    <th>Espansione laterale (mm)</th>
+                                    <th>Area duttile (mm)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($d['provini'] as $p)
                                     <tr>
-                                        <td>{{ $p['codice'] ?? '-' }}</td>
+                                        <td>{{ $p['numero'] ?? '-' }}</td>
                                         <td>{{ $p['tipo'] ?? '-' }}</td>
                                         <td>{{ $p['direzione'] ?? '-' }}</td>
                                         <td>{{ $p['spessore_mm'] ?? '-' }}</td>
-                                        <td>{{ $p['larghezza_mm'] ?? '-' }}</td>
-                                        <td>{{ $p['lunghezza_mm'] ?? '-' }}</td>
-                                        <td>{{ $p['temperatura_C'] ?? '-' }}</td>
-                                        <td>{{ $p['energia_J'] ?? '-' }}</td>
-                                        <td>{{ $p['media_J'] ?? '-' }}</td>
-                                        <td>{{ $p['area_duttile_percent'] ?? '-' }}</td>
-                                        <td>{{ $p['espansione_laterale_mm'] ?? '-' }}</td>
+                                        <td>{{ $p['larghezza'] ?? '-' }}</td>
+                                        <td>{{ $p['lunghezza'] ?? '-' }}</td>
+                                        <td>{{ $p['temperatura'] ?? ($d['temperatura'] ?? '-') }}</td>
+                                        <td>{{ $p['energia_assorbita'] ?? '-' }}</td>
+                                        <td>{{ $p['media_energia'] ?? ($d['media_energia'] ?? '-') }}</td>
+                                        <td>{{ $p['area_duttile_percent'] ?? ($d['area_duttile_perc'] ?? '-') }}</td>
+                                        <td>{{ $p['area_duttile_mm'] ?? '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
+
                 @endif
                 <p><strong>Note:</strong> {{ $d['note'] ?? '-' }}</p>
 

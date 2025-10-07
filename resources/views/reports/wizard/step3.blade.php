@@ -15,6 +15,7 @@
                         $provino = isset($editMode) && $editMode
                             ? (old('provini.' . $i) ?? ($report->dati['provini'][$i] ?? []))
                             : (old('provini.' . $i) ?? (session('report_wizard.provini.' . $i) ?? []));
+
                     @endphp
                     <div class="col-md-12">
                         <div class="card border-primary shadow-sm mb-4">
@@ -25,7 +26,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-2">
                                         <label class="form-label">Test N°</label>
-                                        <input type="text" name="provini[{{ $i }}][codice]" class="form-control" value="{{ $provino['codice'] ?? '' }}">
+                                        <input type="text" name="provini[{{ $i }}][numero]" class="form-control" value="{{ $provino['numero'] ?? '' }}">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">Tipo</label>
@@ -37,44 +38,45 @@
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">Spessore (B) mm</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][spessore_mm]" class="form-control" value="{{ $provino['spessore_mm'] ?? '' }}">
+                                        <select name="provini[{{ $i }}][spessore_mm]" class="form-control" required>
+                                            <option value="">Seleziona...</option>
+                                            <option value="10" {{ (isset($provino['spessore_mm']) && $provino['spessore_mm'] == 10) ? 'selected' : '' }}>10</option>
+                                            <option value="7.5" {{ (isset($provino['spessore_mm']) && $provino['spessore_mm'] == 7.5) ? 'selected' : '' }}>7,5</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">Larghezza (W) mm</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][larghezza_mm]" class="form-control" value="{{ $provino['larghezza_mm'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][larghezza]" class="form-control" value="{{ $provino['larghezza'] ?? '' }}">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">Lunghezza (L) mm</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][lunghezza_mm]" class="form-control" value="{{ $provino['lunghezza_mm'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][lunghezza]" class="form-control" value="{{ $provino['lunghezza'] ?? '' }}">
                                     </div>
                                 </div>
                                 <hr>
                                 <div class="row g-3">
                                     <div class="col-md-2">
                                         <label class="form-label">Temperatura (°C)</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][temperatura_C]" class="form-control" value="{{ $provino['temperatura_C'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][temperatura]" class="form-control" value="{{ ($provino['temperatura'] ?? '') }}">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">Energia (J)</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][energia_J]" class="form-control" value="{{ $provino['energia_J'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][energia_assorbita]" class="form-control" value="{{ $provino['energia_assorbita'] ?? '' }}">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">Media (J)</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][media_J]" class="form-control" value="{{ $provino['media_J'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][media_energia]" class="form-control" value="{{ $provino['media_energia'] ?? '' }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Area duttile (%)</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][area_duttile_percent]" class="form-control" value="{{ $provino['area_duttile_percent'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][area_duttile_perc]" class="form-control" value="{{ $provino['area_duttile_perc'] ?? '' }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label class="form-label">Espansione laterale (mm)</label>
-                                        <input type="number" step="0.1" name="provini[{{ $i }}][espansione_laterale_mm]" class="form-control" value="{{ $provino['espansione_laterale_mm'] ?? '' }}">
+                                        <input type="number" step="0.1" name="provini[{{ $i }}][area_duttile_mm]" class="form-control" value="{{ $provino['area_duttile_mm'] ?? '' }}">
                                     </div>
                                 </div>
-                                <div class="mt-3">
-                                    <label class="form-label">Note</label>
-                                    <input type="text" name="provini[{{ $i }}][note]" class="form-control" value="{{ $provino['note'] ?? '' }}">
-                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -94,10 +96,14 @@
                     <label class="form-label">Test N°</label>
                     <input type="text" name="trazione[codice]" class="form-control" value="{{ $trazione['codice'] ?? '' }}">
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label">Tipo</label>
-                    <input type="text" name="trazione[tipo]" class="form-control" value="{{ $trazione['tipo'] ?? '' }}">
-                </div>
+              <div class="col-md-2">
+                  <label class="form-label">Tipo</label>
+                  <select name="trazione[tipo]" class="form-control">
+                      <option value="">Seleziona...</option>
+                      <option disabled value="cilindrico" {{ (isset($trazione['tipo']) && $trazione['tipo'] == 'cilindrico') ? 'selected' : '' }}>Cilindrico</option>
+                      <option value="piatto" {{ (isset($trazione['tipo']) && $trazione['tipo'] == 'piatto') ? 'selected' : '' }}>Piatto</option>
+                  </select>
+              </div>
                 <div class="col-md-2">
                     <label class="form-label">Spessore (a₀)</label>
                     <input type="number" step="0.1" name="trazione[spessore]" class="form-control" value="{{ $trazione['spessore'] ?? '' }}">

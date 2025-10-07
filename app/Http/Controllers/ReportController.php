@@ -5,12 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use App\Models\Commessa;
 use Illuminate\Http\Request;
-//usiamo maatwbiste/ecxel
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\DefaultImport;
 use PhpOffice\PhpWord\TemplateProcessor;
-use Dompdf\Dompdf;
-use Illuminate\Support\Facades\Storage;
 
 
 class ReportController extends Controller
@@ -103,7 +100,7 @@ class ReportController extends Controller
                                     'temperatura_C' => $riga[6] ?? null,
                                     'energia_J' => $riga[7] ?? null,
                                     'media_J' => $riga[8] ?? null,
-                                    'area_duttile_percent' => $riga[9] ?? null,
+                                    'area_duttile_perc' => $riga[9] ?? null,
                                     'espansione_laterale_mm' => $riga[10] ?? null,
                                 ];
                             }
@@ -233,17 +230,17 @@ class ReportController extends Controller
             case 'resilienza':
                 $rules = [
                     'provini' => 'required|array|min:1|max:3',
-                    'provini.*.codice' => 'nullable|string|max:50',          // Test N°
+                    'provini.*.numero' => 'nullable|string|max:50',
                     'provini.*.tipo' => 'nullable|string|max:50',
                     'provini.*.direzione' => 'nullable|string|max:50',
-                    'provini.*.spessore_mm' => 'nullable|numeric',           // B
-                    'provini.*.larghezza_mm' => 'nullable|numeric',          // W
-                    'provini.*.lunghezza_mm' => 'nullable|numeric',          // L
-                    'provini.*.temperatura_C' => 'nullable|numeric',
-                    'provini.*.energia_J' => 'nullable|numeric',
-                    'provini.*.media_J' => 'nullable|numeric',
-                    'provini.*.area_duttile_percent' => 'nullable|numeric',
-                    'provini.*.espansione_laterale_mm' => 'nullable|numeric',
+                    'provini.*.spessore_mm' => 'nullable|numeric',
+                    'provini.*.larghezza' => 'nullable|numeric',
+                    'provini.*.lunghezza' => 'nullable|numeric',
+                    'provini.*.temperatura' => 'nullable|numeric',
+                    'provini.*.energia_assorbita' => 'nullable|numeric',
+                    'provini.*.media_energia' => 'nullable|numeric',
+                    'provini.*.area_duttile_perc' => 'nullable|numeric',
+                    'provini.*.area_duttile_mm' => 'nullable|numeric',
                     'note' => 'nullable|string|max:1000',
                 ];
                 break;
@@ -292,9 +289,34 @@ class ReportController extends Controller
 
         $validated = $request->validate($rules);
 
-        $reportData = $validated;
-        if ($tipo === 'chimica' && session()->has('report_wizard.medie_chimica')) {
-            $reportData['medie_chimica'] = session('report_wizard.medie_chimica');
+        // Adattamento struttura dati per resilienza
+        if ($tipo === 'resilienza') {
+            $provini = $validated['provini'];
+            $note = $validated['note'] ?? null;
+            $media_energia = null;
+            $area_duttile_perc = null;
+            $temperatura = null;
+            if (isset($provini[0]['media_energia'])) {
+                $media_energia = $provini[0]['media_energia'];
+            }
+            if (isset($provini[0]['area_duttile_perc'])) {
+                $area_duttile_perc = $provini[0]['area_duttile_perc'];
+            }
+            if (isset($provini[0]['temperatura'])) {
+                $temperatura = $provini[0]['temperatura'];
+            }
+            $reportData = [
+                'note' => $note,
+                'provini' => $provini,
+                'media_energia' => $media_energia,
+                'area_duttile_perc' => $area_duttile_perc,
+                'temperatura' => $temperatura
+            ];
+        } else {
+            $reportData = $validated;
+            if ($tipo === 'chimica' && session()->has('report_wizard.medie_chimica')) {
+                $reportData['medie_chimica'] = session('report_wizard.medie_chimica');
+            }
         }
 
         $report = Report::create([
@@ -370,7 +392,7 @@ class ReportController extends Controller
         //citta - cap
         $templateProcessor->setValue('citta_cliente', $cliente ? ($cliente->cap . ' ' . $cliente->citta . ' (' . $cliente->provincia . ')' ?? '-') : '-');
         $templateProcessor->setValue('data', $report->data ? date('d/m/Y', strtotime($report->data)) : '-');
-        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettamento_materiale ? date('d/m/Y', strtotime($report->data_accettamento_materiale)) : '-');
+        $templateProcessor->setValue('data_accettazione_materiale', $report->data_accettazione_materiale ? date('d/m/Y', strtotime($report->data_accettazione_materiale)) : '-');
         $templateProcessor->setValue('rif_ordine', $report->rif_ordine ?? '-');
         $templateProcessor->setValue('data_ordine', $report->data_ordine ? date('d/m/Y', strtotime($report->data_ordine)) : '-');
         $templateProcessor->setValue('oggetto', $report->oggetto ?? '-');
@@ -386,7 +408,43 @@ class ReportController extends Controller
             foreach ($dati['chimica'] as $elemento => $valore) {
                 $templateProcessor->setValue($elemento, $valore !== null ? $valore : '-');
             }
+        }elseif (isset($dati['provini'])) {
+            // Resilienza
+            if (isset($dati['provini']) && is_array($dati['provini'])) {
+                $provini = $dati['provini'];
+                for ($i = 0; $i < 3; $i++) {
+                    $provino = $provini[$i] ?? [];
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_numero', $provino['numero'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_tipo', $provino['tipo'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_direzione', $provino['direzione'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_spessore_mm', $provino['spessore_mm'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_larghezza_mm', $provino['larghezza'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_lunghezza_mm', $provino['lunghezza'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_temp', $provino['temperatura'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_energia', $provino['energia_assorbita'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_media', $provino['media_energia'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_area', $provino['area_duttile_perc'] ?? '-');
+                    $templateProcessor->setValue('provino' . ($i + 1) . '_espansione', $provino['area_duttile_mm'] ?? '-');
+                }
+            }
+        }elseif (isset($dati['trazione'])) {
+            // Trazione
+            $trazione = $dati['trazione'];
+            $templateProcessor->setValue('trazione_codice', $trazione['codice'] ?? '-');
+            $templateProcessor->setValue('trazione_tipo', $trazione['tipo'] ?? '-');
+            $templateProcessor->setValue('trazione_spessore', $trazione['spessore'] ?? '-');
+            $templateProcessor->setValue('trazione_larghezza', $trazione['larghezza'] ?? '-');
+            $templateProcessor->setValue('trazione_area', $trazione['area'] ?? '-');
+            $templateProcessor->setValue('trazione_lunghezza', $trazione['lunghezza'] ?? '-');
+            $templateProcessor->setValue('trazione_temperatura', $trazione['temperatura'] ?? '-');
+            $templateProcessor->setValue('trazione_snervamento', $trazione['snervamento'] ?? '-');
+            $templateProcessor->setValue('trazione_resistenza', $trazione['resistenza'] ?? '-');
+            $templateProcessor->setValue('trazione_allungamento', $trazione['allungamento'] ?? '-');
+            $templateProcessor->setValue('trazione_strizione', $trazione['strizione'] ?? '-');
         }
+
+
+
         // Puoi aggiungere qui altri placeholder specifici per trazione/resilienza se servono
         $wordTemp = storage_path('app/temp_report.docx');
         try {
@@ -520,17 +578,17 @@ class ReportController extends Controller
             case 'resilienza':
                 $rules = [
                     'provini' => 'required|array|min:1|max:3',
-                    'provini.*.codice' => 'nullable|string|max:50',
+                    'provini.*.numero' => 'nullable|string|max:50',
                     'provini.*.tipo' => 'nullable|string|max:50',
                     'provini.*.direzione' => 'nullable|string|max:50',
                     'provini.*.spessore_mm' => 'nullable|numeric',
-                    'provini.*.larghezza_mm' => 'nullable|numeric',
-                    'provini.*.lunghezza_mm' => 'nullable|numeric',
-                    'provini.*.temperatura_C' => 'nullable|numeric',
-                    'provini.*.energia_J' => 'nullable|numeric',
-                    'provini.*.media_J' => 'nullable|numeric',
-                    'provini.*.area_duttile_percent' => 'nullable|numeric',
-                    'provini.*.espansione_laterale_mm' => 'nullable|numeric',
+                    'provini.*.larghezza' => 'nullable|numeric',
+                    'provini.*.lunghezza' => 'nullable|numeric',
+                    'provini.*.temperatura' => 'nullable|numeric',
+                    'provini.*.energia_assorbita' => 'nullable|numeric',
+                    'provini.*.media_energia' => 'nullable|numeric',
+                    'provini.*.area_duttile_perc' => 'nullable|numeric',
+                    'provini.*.area_duttile_mm' => 'nullable|numeric',
                     'note' => 'nullable|string|max:1000',
                 ];
                 break;
@@ -581,7 +639,7 @@ class ReportController extends Controller
             'commessa_id' => session('report_edit_wizard.commessa_id', $report->commessa_id),
             'tipo_prova' => session('report_edit_wizard.tipo_prova', $report->tipo_prova),
             'data' => session('report_edit_wizard.data', $report->data),
-            'data_accettazione_materiale' => session('report_edit_wizard.data_accettamento_materiale', $report->data_accettamento_materiale),
+            'data_accettazione_materiale' => session('report_edit_wizard.data_accettazione_materiale', $report->data_accettazione_materiale),
             'rif_ordine' => session('report_edit_wizard.rif_ordine', $report->rif_ordine),
             'data_ordine' => session('report_edit_wizard.data_ordine', $report->data_ordine),
             'oggetto' => session('report_edit_wizard.oggetto', $report->oggetto),
@@ -591,7 +649,7 @@ class ReportController extends Controller
             'data_inizio' => session('report_edit_wizard.data_inizio', $report->data_inizio),
             'data_fine' => session('report_edit_wizard.data_fine', $report->data_fine),
             'dati' => $reportData,
-        ]);
+        ]+ ['stato' => 'completo']);
         session()->forget('report_edit_wizard');
         return redirect()->route('reports.index')->with('success', 'Report modificato con successo.');
     }
