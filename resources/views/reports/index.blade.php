@@ -12,6 +12,61 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <!-- FILTRI -->
+    <form method="GET" action="" class="card mb-4 shadow-sm">
+        <div class="card-body row g-2 align-items-end">
+            <div class="col-md-2">
+                <label for="rapporto_numero" class="form-label">Rapporto N°</label>
+                <input type="text" name="rapporto_numero" id="rapporto_numero" class="form-control" value="{{ request('rapporto_numero') }}">
+            </div>
+            <div class="col-md-2">
+                <label for="commessa_id" class="form-label">Commessa</label>
+                <select name="commessa_id" id="commessa_id" class="form-select">
+                    <option value="">Tutte</option>
+                    @isset($commesse)
+                        @foreach($commesse as $commessa)
+                            <option value="{{ $commessa->id }}" {{ request('commessa_id') == $commessa->id ? 'selected' : '' }}>{{ $commessa->codice }}</option>
+                        @endforeach
+                    @endisset
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="cliente_id" class="form-label">Cliente</label>
+                <select name="cliente_id" id="cliente_id" class="form-select">
+                    <option value="">Tutti</option>
+                    @isset($clienti)
+                        @foreach($clienti as $cliente)
+                            <option value="{{ $cliente->id }}" {{ request('cliente_id') == $cliente->id ? 'selected' : '' }}>{{ $cliente->ragione_sociale }}</option>
+                        @endforeach
+                    @endisset
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="tipo_prova" class="form-label">Tipo Prova</label>
+                <select name="tipo_prova" id="tipo_prova" class="form-select">
+                    <option value="">Tutte</option>
+                    @isset($tipi_prova)
+                        @foreach($tipi_prova as $tipo)
+                            <option value="{{ $tipo }}" {{ request('tipo_prova') == $tipo ? 'selected' : '' }}>{{ ucfirst($tipo) }}</option>
+                        @endforeach
+                    @endisset
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="stato" class="form-label">Stato</label>
+                <select name="stato" id="stato" class="form-select">
+                    <option value="">Tutti</option>
+                    <option value="bozza" {{ request('stato') == 'bozza' ? 'selected' : '' }}>Bozza</option>
+                    <option value="completo" {{ request('stato') == 'completo' ? 'selected' : '' }}>Completo</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i> Filtra</button>
+                <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary w-100">Reset</a>
+            </div>
+        </div>
+    </form>
+
     <div class="card">
         <div class="card-body">
             <table class="table table-hover">

@@ -343,11 +343,41 @@ class ReportController extends Controller
 
     /* ===== Index/Show (base) ===== */
 
-    public function index()
+    public function index(Request $request)
     {
-        $reports = Report::with('commessa.cliente')->latest()->get();
-        return view('reports.index', compact('reports'));
+        // Recupera dati per i filtri
+        $commesse = \App\Models\Commessa::orderBy('codice')->get();
+        $clienti = \App\Models\Cliente::orderBy('ragione_sociale')->get();
+        $tipi_prova = \App\Models\Report::select('tipo_prova')->distinct()->pluck('tipo_prova');
+
+        // Query base
+        $query = \App\Models\Report::query()->with(['commessa.cliente']);
+
+        // Applica i filtri solo se valorizzati
+        if ($request->filled('rapporto_numero')) {
+            $query->where('rapporto_numero', 'like', '%' . $request->rapporto_numero . '%');
+        }
+        if ($request->filled('commessa_id')) {
+            $query->where('commessa_id', $request->commessa_id);
+        }
+        if ($request->filled('cliente_id')) {
+            $query->whereHas('commessa.cliente', function ($q) use ($request) {
+                $q->where('id', $request->cliente_id);
+            });
+        }
+        if ($request->filled('tipo_prova')) {
+            $query->where('tipo_prova', $request->tipo_prova);
+        }
+        if ($request->filled('stato')) {
+            $query->where('stato', $request->stato);
+        }
+
+        $reports = $query->orderBy('created_at', 'desc')->get();
+
+        // Passa tutte le variabili alla vista
+        return view('reports.index', compact('reports', 'commesse', 'clienti', 'tipi_prova'));
     }
+
 
     public function show(Report $report)
     {
@@ -651,6 +681,6 @@ class ReportController extends Controller
             'dati' => $reportData,
         ]+ ['stato' => 'completo']);
         session()->forget('report_edit_wizard');
-        return redirect()->route('reports.index')->with('success', 'Report modificato con successo.');
+        return redirect()->route('reports.indexreports.index')->with('success', 'Report modificato con successo.');
     }
 }
