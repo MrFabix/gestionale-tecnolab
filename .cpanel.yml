@@ -15,9 +15,6 @@ deployment:
     # Installa dipendenze PHP (in produzione, senza dev)
     - /usr/local/bin/composer install --no-dev --optimize-autoloader
 
-    # Permessi corretti per cache e storage
-    - /bin/chmod -R 775 $DEPLOYPATH/storage $DEPLOYPATH/bootstrap/cache
-
     # Pulisci tutte le cache Laravel
     - /usr/local/bin/php artisan optimize:clear
 
