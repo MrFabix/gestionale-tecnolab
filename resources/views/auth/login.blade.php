@@ -88,7 +88,11 @@
                     {{ old('remember') ? 'checked' : '' }}>
                 <label class="form-check-label" for="remember">Ricordami</label>
             </div>
+            <!-- ...dentro il form, subito dopo il bottone Accedi -->
             <button type="submit" class="btn btn-primary w-100">Accedi</button>
+            <div class="text-center mt-3">
+                <a href="#" class="text-danger text-decoration-underline">Password dimenticata?</a>
+            </div>
         </form>
     </div>
     <div class="footer">
