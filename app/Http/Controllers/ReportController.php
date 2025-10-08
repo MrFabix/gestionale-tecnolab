@@ -337,7 +337,6 @@ class ReportController extends Controller
         ]);
 
         session()->forget('report_wizard');
-        // Conferma pulizia sessione per la view
         return redirect()->route('reports.show', $report)->with(['success' => 'Report creato con successo.', 'wizard_cleared' => true]);
     }
 
@@ -681,6 +680,6 @@ class ReportController extends Controller
             'dati' => $reportData,
         ]+ ['stato' => 'completo']);
         session()->forget('report_edit_wizard');
-        return redirect()->route('reports.indexreports.index')->with('success', 'Report modificato con successo.');
+        return redirect()->route('reports.index')->with('success', 'Report modificato con successo.');
     }
 }

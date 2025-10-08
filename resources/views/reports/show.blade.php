@@ -10,9 +10,9 @@
     <div class="card mb-3">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-4"><strong>Commessa</strong><br>{{ $report->commessa->codice }} — {{ $report->commessa->descrizione }}</div>
+                <div class="col-md-4"><strong>Commessa</strong><br>{{ $report->commessa->codice ?? '-' }} — {{ $report->commessa->descrizione ?? '-' }}</div>
                 <div class="col-md-4"><strong>Cliente</strong><br>{{ $report->commessa->cliente->ragione_sociale ?? '-' }}</div>
-                <div class="col-md-4"><strong>Tipo Prova</strong><br>{{ ucfirst($report->tipo_prova) }}</div>
+                <div class="col-md-4"><strong>Tipo Prova</strong><br>{{ ucfirst($report->tipo_prova ?? '-') }}</div>
             </div>
         </div>
     </div>
@@ -67,37 +67,25 @@
 
             @elseif($report->tipo_prova === 'trazione')
                 <h5 class="mb-3 text-success">Trazione</h5>
-                @if(!empty($d['trazione']))
+                @if(!empty($d))
                     <div class="table-responsive mb-3">
                         <table class="table table-bordered align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Provino N°</th>
-                                    <th>Tipo</th>
                                     <th>Spessore (mm)</th>
                                     <th>Larghezza (mm)</th>
-                                    <th>Area (mm²)</th>
                                     <th>Lunghezza (mm)</th>
-                                    <th>Temperatura (°C)</th>
-                                    <th>Snervamento (MPa)</th>
                                     <th>Resistenza (MPa)</th>
-                                    <th>Allungamento (%)</th>
-                                    <th>Strizione (%)</th>
+                                    <th>Snervamento (MPa)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>{{ $d['trazione']['codice'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['tipo'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['spessore'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['larghezza'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['area'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['lunghezza'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['temperatura'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['snervamento'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['resistenza'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['allungamento'] ?? '-' }}</td>
-                                    <td>{{ $d['trazione']['strizione'] ?? '-' }}</td>
+                                    <td>{{ $d['spessore'] ?? '-' }}</td>
+                                    <td>{{ $d['larghezza'] ?? '-' }}</td>
+                                    <td>{{ $d['lunghezza'] ?? '-' }}</td>
+                                    <td>{{ $d['resistenza'] ?? '-' }}</td>
+                                    <td>{{ $d['snervamento'] ?? '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>
