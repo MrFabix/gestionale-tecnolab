@@ -39,6 +39,6 @@
             <button type="submit" class="btn btn-success btn-sm">Salva Modifiche</button>
             <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-sm">Annulla</a>
         </div>
-        </for    </form>
+       </form>
 @endsection
 

@@ -48,7 +48,7 @@ class UserController extends Controller
             'password' => 'required|string|confirmed',
             'ruolo' => 'required|in:admin,user',
         ]);
-        $validated['password'] = bcrypt($validated['password']);
+        $validated['password'] = ($validated['password']);
         User::create($validated);
         return redirect()->route('admin.users.index')->with('success', 'Utente creato con successo');
     }
