@@ -49,7 +49,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->parameters(['users' => 'user']);
+    Route::post('users/{user}/send-credentials', [UserController::class, 'sendCredentials'])->name('users.sendCredentials');
     Route::get('users/logs', [UserController::class, 'logs'])->name('users.logs');
 });
 

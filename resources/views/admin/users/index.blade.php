@@ -28,10 +28,15 @@
                             @csrf @method('DELETE')
                             <button class="btn btn-sm btn-danger">Elimina</button>
                         </form>
+                        <form action="{{ route('admin.users.sendCredentials', $user) }}" method="POST" style="display:inline-block">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-info" title="Invia credenziali via email">
+                                <i class="bi bi-envelope"></i> Invia credenziali
+                            </button>
+                        </form>
                     </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 @endsection
-

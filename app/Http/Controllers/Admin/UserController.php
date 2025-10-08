@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -98,5 +99,30 @@ class UserController extends Controller
     {
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'Utente eliminato');
+    }
+
+    /**
+     * Invia le credenziali e username via email all'utente selezionato.
+     */
+    public function sendCredentials(User $user)
+    {
+        // Recupera la password in chiaro solo se la gestisci (altrimenti invia solo username)
+        $password = null;
+        if (isset($user->plain_password)) {
+            $password = $user->plain_password;
+        }
+        // Prepara i dati per la mail
+        $data = [
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'password' => $password,
+        ];
+        // Invia la mail
+        Mail::send('emails.send-credentials', $data, function($message) use ($user) {
+            $message->to($user->email)
+                ->subject('Le tue credenziali di accesso');
+        });
+        return redirect()->route('admin.users.index')->with('success', 'Credenziali inviate a ' . $user->email);
     }
 }
