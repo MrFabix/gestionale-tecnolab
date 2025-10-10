@@ -104,7 +104,7 @@
                 <i class="bi bi-file-earmark-text-fill"></i> Report
             </a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item d-none">
             <a href="{{ route('eventi.index') }}"
                class="nav-link {{ request()->routeIs('eventi.*') ? 'active' : '' }}">
                 <i class="bi bi-calendar-event-fill"></i> Calendario
