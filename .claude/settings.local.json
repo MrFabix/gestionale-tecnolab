@@ -6,7 +6,9 @@
       "Bash(php -l app/Models/Attrezzatura.php)",
       "Bash(php -l app/Models/AttrezzaturaManutenzione.php)",
       "Bash(php -l app/Models/AttrezzaturaTaratura.php)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(grep -n \"ragione_sociale\" app/Http/Controllers/OffertaController.php app/Models/Offerta.php resources/views/offerte/*.blade.php)",
+      "Bash(curl -s http://127.0.0.1:8000/eventi/feed)"
     ]
   }
 }

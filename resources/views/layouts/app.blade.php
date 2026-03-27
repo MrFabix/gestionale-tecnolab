@@ -122,6 +122,12 @@
                 <i class="bi bi-people-fill"></i> Personale
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('offerte.index') }}"
+               class="nav-link {{ request()->routeIs('offerte.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-text-fill"></i> Offerte
+            </a>
+        </li>
         @if(Auth::check() && Auth::user()->ruolo === 'admin')
             <li class="nav-item">
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">

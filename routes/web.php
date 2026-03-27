@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AttrezzaturaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CommessaController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OffertaController;
 use App\Http\Controllers\PersonaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -20,11 +22,54 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('commesse', CommessaController::class)->parameters(['commesse' => 'commessa']);
     Route::resource('reports', ReportController::class); // resource completa
     Route::resource('clienti', ClienteController::class)->parameters(['clienti' => 'cliente']);
+    Route::get('/eventi/feed', [\App\Http\Controllers\EventController::class, 'feed'])->name('eventi.feed');
     Route::resource('eventi', \App\Http\Controllers\EventController::class);
+
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
-    Route::get('/', function () {return view('home');})->name('home');
+    Route::get('/', [DashboardController::class, 'index'])->name('home');
 
+
+
+    Route::resource('attrezzature', AttrezzaturaController::class)
+        ->parameters(['attrezzature' => 'attrezzatura']);
+
+// Cancellazione singolo file media
+    Route::delete('attrezzature/{attrezzatura}/media/{mediaId}', [AttrezzaturaController::class, 'destroyMedia'])
+        ->name('attrezzature.media.destroy');
+
+// Tarature
+    Route::post('attrezzature/{attrezzatura}/tarature', [AttrezzaturaController::class, 'storeTaratura'])
+        ->name('attrezzature.tarature.store');
+    Route::delete('attrezzature/{attrezzatura}/tarature/{taratura}', [AttrezzaturaController::class, 'destroyTaratura'])
+        ->name('attrezzature.tarature.destroy');
+
+// Manutenzioni
+    Route::post('attrezzature/{attrezzatura}/manutenzioni', [AttrezzaturaController::class, 'storeManutenzione'])
+        ->name('attrezzature.manutenzioni.store');
+    Route::delete('attrezzature/{attrezzatura}/manutenzioni/{manutenzione}', [AttrezzaturaController::class, 'destroyManutenzione'])
+        ->name('attrezzature.manutenzioni.destroy');
+
+    Route::resource('personale', PersonaleController::class);
+
+// Cancellazione singolo documento
+    Route::delete('personale/{personale}/media/{mediaId}', [PersonaleController::class, 'destroyMedia'])
+        ->name('personale.media.destroy');
+
+// Formazione
+    Route::post('personale/{personale}/formazioni', [PersonaleController::class, 'storeFormazione'])
+        ->name('personale.formazioni.store');
+    Route::put('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'updateFormazione'])
+        ->name('personale.formazioni.update');
+    Route::delete('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'destroyFormazione'])
+        ->name('personale.formazioni.destroy');
+
+    Route::resource('offerte', OffertaController::class)->parameters(['offerte' => 'offerta']);
+
+// Azioni extra
+    Route::post('offerte/{offerta}/accetta',      [OffertaController::class, 'accetta'])->name('offerte.accetta');
+    Route::get('offerte/{offerta}/download-word', [OffertaController::class, 'downloadWord'])->name('offerte.downloadWord');
+    Route::delete('offerte/{offerta}/media/{mediaId}', [OffertaController::class, 'destroyMedia'])->name('offerte.media.destroy');
 
 
     // Wizard
@@ -35,6 +80,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('step2', [ReportController::class, 'postStep2'])->name('step2.post');
         Route::get('step3', [ReportController::class, 'createStep3'])->name('step3');
         Route::post('step3', [ReportController::class, 'postStep3'])->name('step3.post');
+
+
+
     });
 
     // Wizard Modifica Report
@@ -57,39 +105,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 });
 
 
-
-Route::resource('attrezzature', AttrezzaturaController::class)
-    ->parameters(['attrezzature' => 'attrezzatura']);
-
-// Cancellazione singolo file media
-Route::delete('attrezzature/{attrezzatura}/media/{mediaId}', [AttrezzaturaController::class, 'destroyMedia'])
-    ->name('attrezzature.media.destroy');
-
-// Tarature
-Route::post('attrezzature/{attrezzatura}/tarature', [AttrezzaturaController::class, 'storeTaratura'])
-    ->name('attrezzature.tarature.store');
-Route::delete('attrezzature/{attrezzatura}/tarature/{taratura}', [AttrezzaturaController::class, 'destroyTaratura'])
-    ->name('attrezzature.tarature.destroy');
-
-// Manutenzioni
-Route::post('attrezzature/{attrezzatura}/manutenzioni', [AttrezzaturaController::class, 'storeManutenzione'])
-    ->name('attrezzature.manutenzioni.store');
-Route::delete('attrezzature/{attrezzatura}/manutenzioni/{manutenzione}', [AttrezzaturaController::class, 'destroyManutenzione'])
-    ->name('attrezzature.manutenzioni.destroy');
-
-Route::resource('personale', PersonaleController::class);
-
-// Cancellazione singolo documento
-Route::delete('personale/{personale}/media/{mediaId}', [PersonaleController::class, 'destroyMedia'])
-    ->name('personale.media.destroy');
-
-// Formazione
-Route::post('personale/{personale}/formazioni', [PersonaleController::class, 'storeFormazione'])
-    ->name('personale.formazioni.store');
-Route::put('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'updateFormazione'])
-    ->name('personale.formazioni.update');
-Route::delete('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'destroyFormazione'])
-    ->name('personale.formazioni.destroy');
 
 
 
