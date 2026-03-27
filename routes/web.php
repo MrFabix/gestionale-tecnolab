@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AttrezzaturaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CommessaController;
+use App\Http\Controllers\PersonaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Auth;
@@ -75,6 +76,21 @@ Route::post('attrezzature/{attrezzatura}/manutenzioni', [AttrezzaturaController:
     ->name('attrezzature.manutenzioni.store');
 Route::delete('attrezzature/{attrezzatura}/manutenzioni/{manutenzione}', [AttrezzaturaController::class, 'destroyManutenzione'])
     ->name('attrezzature.manutenzioni.destroy');
+
+Route::resource('personale', PersonaleController::class);
+
+// Cancellazione singolo documento
+Route::delete('personale/{personale}/media/{mediaId}', [PersonaleController::class, 'destroyMedia'])
+    ->name('personale.media.destroy');
+
+// Formazione
+Route::post('personale/{personale}/formazioni', [PersonaleController::class, 'storeFormazione'])
+    ->name('personale.formazioni.store');
+Route::put('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'updateFormazione'])
+    ->name('personale.formazioni.update');
+Route::delete('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'destroyFormazione'])
+    ->name('personale.formazioni.destroy');
+
 
 
 
