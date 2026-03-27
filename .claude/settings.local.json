@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(php -l app/Http/Controllers/AttrezzaturaController.php)",
+      "Bash(php -l app/Models/Attrezzatura.php)",
+      "Bash(php -l app/Models/AttrezzaturaManutenzione.php)",
+      "Bash(php -l app/Models/AttrezzaturaTaratura.php)"
+    ]
+  }
+}

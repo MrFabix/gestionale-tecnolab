@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\AttrezzaturaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CommessaController;
 use App\Http\Controllers\ProfileController;
@@ -53,5 +54,28 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('users/{user}/send-credentials', [UserController::class, 'sendCredentials'])->name('users.sendCredentials');
     Route::get('users/logs', [UserController::class, 'logs'])->name('users.logs');
 });
+
+
+
+Route::resource('attrezzature', AttrezzaturaController::class)
+    ->parameters(['attrezzature' => 'attrezzatura']);
+
+// Cancellazione singolo file media
+Route::delete('attrezzature/{attrezzatura}/media/{mediaId}', [AttrezzaturaController::class, 'destroyMedia'])
+    ->name('attrezzature.media.destroy');
+
+// Tarature
+Route::post('attrezzature/{attrezzatura}/tarature', [AttrezzaturaController::class, 'storeTaratura'])
+    ->name('attrezzature.tarature.store');
+Route::delete('attrezzature/{attrezzatura}/tarature/{taratura}', [AttrezzaturaController::class, 'destroyTaratura'])
+    ->name('attrezzature.tarature.destroy');
+
+// Manutenzioni
+Route::post('attrezzature/{attrezzatura}/manutenzioni', [AttrezzaturaController::class, 'storeManutenzione'])
+    ->name('attrezzature.manutenzioni.store');
+Route::delete('attrezzature/{attrezzatura}/manutenzioni/{manutenzione}', [AttrezzaturaController::class, 'destroyManutenzione'])
+    ->name('attrezzature.manutenzioni.destroy');
+
+
 
 Auth::routes();

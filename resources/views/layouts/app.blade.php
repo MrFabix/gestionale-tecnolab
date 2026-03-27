@@ -104,10 +104,16 @@
                 <i class="bi bi-file-earmark-text-fill"></i> Report
             </a>
         </li>
-        <li class="nav-item d-none">
+        <li class="nav-item ">
             <a href="{{ route('eventi.index') }}"
                class="nav-link {{ request()->routeIs('eventi.*') ? 'active' : '' }}">
                 <i class="bi bi-calendar-event-fill"></i> Calendario
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('attrezzature.index') }}"
+               class="nav-link {{ request()->routeIs('attrezzature.*') ? 'active' : '' }}">
+                <i class="bi bi-tools"></i> Attrezzature
             </a>
         </li>
         @if(Auth::check() && Auth::user()->ruolo === 'admin')
