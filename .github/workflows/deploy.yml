@@ -3,7 +3,7 @@ name: Caricamento automatico FTP
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
