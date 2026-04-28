@@ -328,14 +328,6 @@
                             </div>
                             <input type="hidden" id="evColore" value="#3b82f6">
                         </div>
-                        @if(Auth::user()->ruolo === 'admin')
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" id="evGlobale">
-                                <label class="form-check-label" style="font-size:.82rem;" for="evGlobale">
-                                    <i class="bi bi-globe2 me-1"></i>Visibile a tutti gli utenti
-                                </label>
-                            </div>
-                        @endif
                     </form>
                 </div>
                 <div class="ev-modal-foot">
@@ -564,7 +556,7 @@
             document.querySelectorAll('.color-swatch').forEach(s =>
                 s.classList.toggle('selected', s.dataset.color === colore)
             );
-            if (document.getElementById('evGlobale')) document.getElementById('evGlobale').checked = false;
+
 
             document.getElementById('evModalOverlay').classList.add('open');
             setTimeout(() => document.getElementById('evTitolo').focus(), 50);
@@ -598,7 +590,6 @@
                 fine:        document.getElementById('evFine').value || null,
                 descrizione: document.getElementById('evDescrizione').value,
                 colore:      document.getElementById('evColore').value,
-                globale:     document.getElementById('evGlobale')?.checked ? 1 : 0,
             };
 
             let url = STORE_URL, method = 'POST';

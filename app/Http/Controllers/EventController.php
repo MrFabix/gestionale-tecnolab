@@ -36,11 +36,7 @@ class EventController extends Controller
         $eventi = [];
 
         // ── 1. EVENTI MANUALI dal DB ──────────────────────────
-        $userId = Auth::id();
-        $manuali = Event::where(function ($q) use ($userId) {
-            $q->whereNull('user_id')->orWhere('user_id', $userId);
-        })
-            ->where(function ($q) use ($dal, $al) {
+        $manuali = Event::where(function ($q) use ($dal, $al) {
                 $q->whereBetween('inizio', [$dal, $al])
                     ->orWhereBetween('fine', [$dal, $al])
                     ->orWhere(fn($q2) => $q2->where('inizio', '<=', $dal)->where('fine', '>=', $al));
@@ -184,11 +180,7 @@ class EventController extends Controller
             'inizio'      => 'required|date',
             'fine'        => 'nullable|date|after_or_equal:inizio',
             'colore'      => 'nullable|string|max:20',
-            'globale'     => 'nullable|boolean',
         ]);
-
-        $isAdmin = Auth::user()->ruolo === 'admin';
-        $userId  = ($request->boolean('globale') && $isAdmin) ? null : Auth::id();
 
         $evento = Event::create([
             'titolo'      => $data['titolo'],
@@ -197,7 +189,7 @@ class EventController extends Controller
             'fine'        => $data['fine'] ?? null,
             'colore'      => $data['colore'] ?? '#3b82f6',
             'tipo'        => 'manuale',
-            'user_id'     => $userId,
+            'user_id'     => null,
         ]);
 
         if ($request->wantsJson()) {
@@ -214,7 +206,6 @@ class EventController extends Controller
     public function update(Request $request, string $id)
     {
         $evento = Event::findOrFail($id);
-        $this->autorizza($evento);
 
         $data = $request->validate([
             'titolo'      => 'required|string|max:255',
@@ -240,7 +231,6 @@ class EventController extends Controller
     public function destroy(string $id)
     {
         $evento = Event::findOrFail($id);
-        $this->autorizza($evento);
         $evento->delete();
 
         return response()->json(['ok' => true]);
