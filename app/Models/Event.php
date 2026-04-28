@@ -12,6 +12,8 @@ class Event extends Model
         'descrizione',
         'inizio',
         'fine',
+        'colore',
+        'tipo',
         'user_id',
     ];
 
