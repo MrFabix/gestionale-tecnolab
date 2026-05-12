@@ -128,6 +128,12 @@
                 <i class="bi bi-file-earmark-text-fill"></i> Offerte
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('documenti.index') }}"
+               class="nav-link {{ request()->routeIs('documenti.*') ? 'active' : '' }}">
+                <i class="bi bi-folder2-open"></i> Documenti
+            </a>
+        </li>
         @if(Auth::check() && Auth::user()->ruolo === 'admin')
             <li class="nav-item">
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">

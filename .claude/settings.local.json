@@ -8,7 +8,9 @@
       "Bash(php -l app/Models/AttrezzaturaTaratura.php)",
       "Bash(php:*)",
       "Bash(grep -n \"ragione_sociale\" app/Http/Controllers/OffertaController.php app/Models/Offerta.php resources/views/offerte/*.blade.php)",
-      "Bash(curl -s http://127.0.0.1:8000/eventi/feed)"
+      "Bash(curl -s http://127.0.0.1:8000/eventi/feed)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\fmaxp\\\\Documents\\\\GitHub\\\\gestionale-tecnolab\" -Directory)",
+      "Bash(Select-Object -First 20)"
     ]
   }
 }

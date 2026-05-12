@@ -5,6 +5,7 @@ use App\Http\Controllers\AttrezzaturaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CommessaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\OffertaController;
 use App\Http\Controllers\PersonaleController;
 use App\Http\Controllers\ProfileController;
@@ -67,6 +68,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('personale.formazioni.update');
     Route::delete('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'destroyFormazione'])
         ->name('personale.formazioni.destroy');
+
+    Route::resource('documenti', DocumentoController::class)->parameters(['documenti' => 'documento']);
+    Route::post('documenti/{documento}/revisioni', [DocumentoController::class, 'storeRevisione'])
+        ->name('documenti.revisioni.store');
+    Route::delete('documenti/{documento}/revisioni/{revisione}', [DocumentoController::class, 'destroyRevisione'])
+        ->name('documenti.revisioni.destroy');
 
     Route::resource('offerte', OffertaController::class)->parameters(['offerte' => 'offerta']);
 
