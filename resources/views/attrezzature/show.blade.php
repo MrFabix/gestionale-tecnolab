@@ -186,7 +186,17 @@
                             @endif
                         </td>
                         <td>{{ $t->note ?? '—' }}</td>
-                        <td>
+                        <td class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditTaratura"
+                                    data-id="{{ $t->id }}"
+                                    data-url="{{ route('attrezzature.tarature.update', [$attrezzatura, $t]) }}"
+                                    data-data_taratura="{{ $t->data_taratura->format('Y-m-d') }}"
+                                    data-data_scadenza="{{ $t->data_scadenza?->format('Y-m-d') }}"
+                                    data-eseguita_da="{{ $t->eseguita_da }}"
+                                    data-note="{{ $t->note }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
                             <form action="{{ route('attrezzature.tarature.destroy', [$attrezzatura, $t]) }}" method="POST"
                                   onsubmit="return confirm('Eliminare questa taratura?')">
                                 @csrf @method('DELETE')
@@ -282,7 +292,17 @@
                             @endif
                         </td>
                         <td><small>{{ Str::limit($m->descrizione, 60) ?? '—' }}</small></td>
-                        <td>
+                        <td class="d-flex gap-1">
+                            <button class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditManutenzione"
+                                    data-url="{{ route('attrezzature.manutenzioni.update', [$attrezzatura, $m]) }}"
+                                    data-data_intervento="{{ $m->data_intervento->format('Y-m-d') }}"
+                                    data-prossima_scadenza="{{ $m->prossima_scadenza?->format('Y-m-d') }}"
+                                    data-tipo="{{ $m->tipo }}"
+                                    data-eseguita_da="{{ $m->eseguita_da }}"
+                                    data-descrizione="{{ $m->descrizione }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
                             <form action="{{ route('attrezzature.manutenzioni.destroy', [$attrezzatura, $m]) }}" method="POST"
                                   onsubmit="return confirm('Eliminare?')">
                                 @csrf @method('DELETE')
@@ -297,5 +317,121 @@
             </table>
         </div>
     </div>
+
+{{-- Modal modifica taratura --}}
+<div class="modal fade" id="modalEditTaratura" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="formEditTaratura" method="POST" enctype="multipart/form-data">
+            @csrf @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil"></i> Modifica taratura</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Data taratura *</label>
+                            <input type="date" name="data_taratura" id="et_data_taratura" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Scadenza</label>
+                            <input type="date" name="data_scadenza" id="et_data_scadenza" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Eseguita da</label>
+                            <input type="text" name="eseguita_da" id="et_eseguita_da" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Note</label>
+                            <textarea name="note" id="et_note" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Sostituisci certificato (opzionale)</label>
+                            <input type="file" name="certificato" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Salva</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal modifica manutenzione --}}
+<div class="modal fade" id="modalEditManutenzione" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="formEditManutenzione" method="POST" enctype="multipart/form-data">
+            @csrf @method('PUT')
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil"></i> Modifica manutenzione</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Data intervento *</label>
+                            <input type="date" name="data_intervento" id="em_data_intervento" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Prossima scadenza</label>
+                            <input type="date" name="prossima_scadenza" id="em_prossima_scadenza" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tipo</label>
+                            <select name="tipo" id="em_tipo" class="form-select">
+                                <option value="ordinaria">Ordinaria</option>
+                                <option value="straordinaria">Straordinaria</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Eseguita da</label>
+                            <input type="text" name="eseguita_da" id="em_eseguita_da" class="form-control">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Descrizione intervento</label>
+                            <textarea name="descrizione" id="em_descrizione" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Sostituisci documento (opzionale)</label>
+                            <input type="file" name="documento" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Salva</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section('scripts')
+<script>
+document.getElementById('modalEditTaratura').addEventListener('show.bs.modal', function (e) {
+    const btn = e.relatedTarget;
+    document.getElementById('formEditTaratura').action = btn.dataset.url;
+    document.getElementById('et_data_taratura').value  = btn.dataset.data_taratura;
+    document.getElementById('et_data_scadenza').value  = btn.dataset.data_scadenza ?? '';
+    document.getElementById('et_eseguita_da').value    = btn.dataset.eseguita_da ?? '';
+    document.getElementById('et_note').value           = btn.dataset.note ?? '';
+});
+
+document.getElementById('modalEditManutenzione').addEventListener('show.bs.modal', function (e) {
+    const btn = e.relatedTarget;
+    document.getElementById('formEditManutenzione').action    = btn.dataset.url;
+    document.getElementById('em_data_intervento').value       = btn.dataset.data_intervento;
+    document.getElementById('em_prossima_scadenza').value     = btn.dataset.prossima_scadenza ?? '';
+    document.getElementById('em_tipo').value                  = btn.dataset.tipo;
+    document.getElementById('em_eseguita_da').value           = btn.dataset.eseguita_da ?? '';
+    document.getElementById('em_descrizione').value           = btn.dataset.descrizione ?? '';
+});
+</script>
+@endsection
 
 @endsection

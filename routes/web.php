@@ -41,12 +41,16 @@ Route::middleware(['auth'])->group(function () {
 // Tarature
     Route::post('attrezzature/{attrezzatura}/tarature', [AttrezzaturaController::class, 'storeTaratura'])
         ->name('attrezzature.tarature.store');
+    Route::put('attrezzature/{attrezzatura}/tarature/{taratura}', [AttrezzaturaController::class, 'updateTaratura'])
+        ->name('attrezzature.tarature.update');
     Route::delete('attrezzature/{attrezzatura}/tarature/{taratura}', [AttrezzaturaController::class, 'destroyTaratura'])
         ->name('attrezzature.tarature.destroy');
 
 // Manutenzioni
     Route::post('attrezzature/{attrezzatura}/manutenzioni', [AttrezzaturaController::class, 'storeManutenzione'])
         ->name('attrezzature.manutenzioni.store');
+    Route::put('attrezzature/{attrezzatura}/manutenzioni/{manutenzione}', [AttrezzaturaController::class, 'updateManutenzione'])
+        ->name('attrezzature.manutenzioni.update');
     Route::delete('attrezzature/{attrezzatura}/manutenzioni/{manutenzione}', [AttrezzaturaController::class, 'destroyManutenzione'])
         ->name('attrezzature.manutenzioni.destroy');
 

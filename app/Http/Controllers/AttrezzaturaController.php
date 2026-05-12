@@ -158,6 +158,27 @@ class AttrezzaturaController extends Controller
         return back()->with('success', 'Taratura registrata.');
     }
 
+    public function updateTaratura(Request $request, Attrezzatura $attrezzatura, AttrezzaturaTaratura $taratura)
+    {
+        $data = $request->validate([
+            'data_taratura'  => 'required|date',
+            'data_scadenza'  => 'nullable|date|after_or_equal:data_taratura',
+            'eseguita_da'    => 'nullable|string|max:255',
+            'note'           => 'nullable|string',
+            'certificato'    => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
+        ]);
+
+        $taratura->update($data);
+
+        if ($request->hasFile('certificato')) {
+            $taratura->addMedia($request->file('certificato'))
+                ->usingName('Certificato taratura ' . $data['data_taratura'])
+                ->toMediaCollection('certificato');
+        }
+
+        return back()->with('success', 'Taratura aggiornata.');
+    }
+
     public function destroyTaratura(Attrezzatura $attrezzatura, AttrezzaturaTaratura $taratura)
     {
         $taratura->delete();
@@ -188,6 +209,28 @@ class AttrezzaturaController extends Controller
         }
 
         return back()->with('success', 'Manutenzione registrata.');
+    }
+
+    public function updateManutenzione(Request $request, Attrezzatura $attrezzatura, AttrezzaturaManutenzione $manutenzione)
+    {
+        $data = $request->validate([
+            'data_intervento'   => 'required|date',
+            'prossima_scadenza' => 'nullable|date|after_or_equal:data_intervento',
+            'tipo'              => 'required|in:ordinaria,straordinaria',
+            'eseguita_da'       => 'nullable|string|max:255',
+            'descrizione'       => 'nullable|string',
+            'documento'         => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
+        ]);
+
+        $manutenzione->update($data);
+
+        if ($request->hasFile('documento')) {
+            $manutenzione->addMedia($request->file('documento'))
+                ->usingName('Rapporto manutenzione ' . $data['data_intervento'])
+                ->toMediaCollection('documento');
+        }
+
+        return back()->with('success', 'Manutenzione aggiornata.');
     }
 
     public function destroyManutenzione(Attrezzatura $attrezzatura, AttrezzaturaManutenzione $manutenzione)
