@@ -153,7 +153,7 @@
 
     <div class="mt-3 d-flex gap-2">
         <a href="{{ route('reports.index') }}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Indietro</a>
-        <form action="{{ route('reports.destroy', $report) }}" method="POST" onsubmit="return confirm('Eliminare questo report?')">
+        <form action="{{ route('reports.destroy', $report) }}" method="POST" data-confirm="Eliminare questo report?">
             @csrf @method('DELETE')
             <button class="btn btn-danger"><i class="bi bi-trash"></i> Elimina</button>
         </form>

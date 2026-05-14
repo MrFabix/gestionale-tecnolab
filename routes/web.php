@@ -5,6 +5,7 @@ use App\Http\Controllers\AttrezzaturaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\CommessaController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CartellaController;
 use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\OffertaController;
 use App\Http\Controllers\PersonaleController;
@@ -69,11 +70,23 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('personale/{personale}/formazioni/{formazione}', [PersonaleController::class, 'destroyFormazione'])
         ->name('personale.formazioni.destroy');
 
-    Route::resource('documenti', DocumentoController::class)->parameters(['documenti' => 'documento']);
+    // Filesystem documenti
+    Route::get('documenti', [DocumentoController::class, 'index'])->name('documenti.index');
+    Route::post('documenti', [DocumentoController::class, 'store'])->name('documenti.store');
+    Route::get('documenti/{documento}', [DocumentoController::class, 'show'])->name('documenti.show');
+    Route::get('documenti/{documento}/edit', [DocumentoController::class, 'edit'])->name('documenti.edit');
+    Route::put('documenti/{documento}', [DocumentoController::class, 'update'])->name('documenti.update');
+    Route::delete('documenti/{documento}', [DocumentoController::class, 'destroy'])->name('documenti.destroy');
     Route::post('documenti/{documento}/revisioni', [DocumentoController::class, 'storeRevisione'])
         ->name('documenti.revisioni.store');
     Route::delete('documenti/{documento}/revisioni/{revisione}', [DocumentoController::class, 'destroyRevisione'])
         ->name('documenti.revisioni.destroy');
+
+    // Cartelle
+    Route::post('cartelle', [CartellaController::class, 'store'])->name('cartelle.store');
+    Route::get('cartelle/{cartella}', [CartellaController::class, 'show'])->name('cartelle.show');
+    Route::put('cartelle/{cartella}', [CartellaController::class, 'update'])->name('cartelle.update');
+    Route::delete('cartelle/{cartella}', [CartellaController::class, 'destroy'])->name('cartelle.destroy');
 
     Route::resource('offerte', OffertaController::class)->parameters(['offerte' => 'offerta']);
 

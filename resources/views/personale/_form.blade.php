@@ -155,7 +155,7 @@
                                 <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ $doc->name }}
                             </a>
                             <form action="{{ route('personale.media.destroy', [$personale, $doc->id]) }}" method="POST"
-                                  onsubmit="return confirm('Eliminare questo documento?')">
+                                  data-confirm="Eliminare questo documento?">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></button>
                             </form>

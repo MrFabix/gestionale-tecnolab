@@ -99,7 +99,7 @@
                                         {{ $doc->name }}
                                     </a>
                                     <form action="{{ route('attrezzature.media.destroy', [$attrezzatura, $doc->id]) }}" method="POST"
-                                          onsubmit="return confirm('Eliminare?')">
+                                          data-confirm="Eliminare?">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger py-0"><i class="bi bi-trash"></i></button>
                                     </form>
@@ -198,7 +198,7 @@
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <form action="{{ route('attrezzature.tarature.destroy', [$attrezzatura, $t]) }}" method="POST"
-                                  onsubmit="return confirm('Eliminare questa taratura?')">
+                                  data-confirm="Eliminare questa taratura?">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
@@ -304,7 +304,7 @@
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <form action="{{ route('attrezzature.manutenzioni.destroy', [$attrezzatura, $m]) }}" method="POST"
-                                  onsubmit="return confirm('Eliminare?')">
+                                  data-confirm="Eliminare?">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>

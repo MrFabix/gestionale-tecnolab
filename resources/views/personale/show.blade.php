@@ -126,7 +126,7 @@
                                         <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ $doc->name }}
                                     </a>
                                     <form action="{{ route('personale.media.destroy', [$personale, $doc->id]) }}" method="POST"
-                                          onsubmit="return confirm('Eliminare?')">
+                                          data-confirm="Eliminare?">
                                         @csrf @method('DELETE')
                                         <button class="btn-action del"><i class="bi bi-trash"></i></button>
                                     </form>
@@ -245,7 +245,7 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <form action="{{ route('personale.formazioni.destroy', [$personale, $f]) }}" method="POST"
-                                          onsubmit="return confirm('Eliminare questa formazione?')">
+                                          data-confirm="Eliminare questa formazione?">
                                         @csrf @method('DELETE')
                                         <button class="btn-action del"><i class="bi bi-trash"></i></button>
                                     </form>

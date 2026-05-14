@@ -13,6 +13,8 @@
 
 
     <style>
+        /* Session success gestita da Swal toast */
+        .alert-success { display: none !important; }
         body {
             min-height: 100vh;
             display: flex;
@@ -178,8 +180,46 @@
 
 {{-- Bootstrap JS --}}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-{{--SweetAlert2--}}
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{{-- SweetAlert2 --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// ── Toast globale ─────────────────────────────────
+const SwalToast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3500,
+    timerProgressBar: true,
+});
+
+@if(session('success'))
+    SwalToast.fire({ icon: 'success', title: @json(session('success')) });
+@endif
+@if(session('error'))
+    SwalToast.fire({ icon: 'error', title: @json(session('error')) });
+@endif
+@if(session('warning'))
+    SwalToast.fire({ icon: 'warning', title: @json(session('warning')) });
+@endif
+
+// ── Confirm globale su data-confirm ──────────────
+document.addEventListener('submit', function(e) {
+    const form = e.target;
+    const msg  = form.dataset.confirm;
+    if (!msg) return;
+    e.preventDefault();
+    Swal.fire({
+        title: 'Sei sicuro?',
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sì, elimina',
+        cancelButtonText: 'Annulla',
+    }).then(r => { if (r.isConfirmed) { form.dataset.confirm = ''; form.submit(); } });
+});
+</script>
 @yield('scripts')
 
 </body>

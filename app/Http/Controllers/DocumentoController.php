@@ -2,65 +2,89 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cartella;
 use App\Models\Documento;
 use App\Models\DocumentoRevisione;
 use Illuminate\Http\Request;
 
 class DocumentoController extends Controller
 {
+    /** Root del filesystem documenti */
     public function index()
     {
-        $documenti = Documento::with('ultimaRevisione')->orderBy('titolo')->get();
-        return view('documenti.index', compact('documenti'));
-    }
-
-    public function create()
-    {
-        return view('documenti.create');
+        $cartelle  = Cartella::whereNull('parent_id')->orderBy('nome')->get();
+        $documenti = Documento::whereNull('cartella_id')->with(['ultimaRevisione', 'ultimaRevisione.media'])->orderBy('titolo')->get();
+        return view('documenti.index', compact('cartelle', 'documenti'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'titolo'      => 'required|string|max:255',
-            'categoria'   => 'nullable|string|max:255',
-            'descrizione' => 'nullable|string',
-            'stato'       => 'required|in:bozza,attivo,obsoleto',
+        $request->validate([
+            'titolo'            => 'required|string|max:255',
+            'descrizione'       => 'nullable|string',
+            'stato'             => 'required|in:bozza,attivo,obsoleto',
+            'cartella_id'       => 'nullable|exists:cartelle,id',
+            'numero_revisione'  => 'required|integer|min:0',
+            'data_revisione'    => 'required|date',
+            'redatto_da'        => 'nullable|string|max:255',
+            'motivo'            => 'nullable|string',
+            'note_rev'          => 'nullable|string',
+            'file'              => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:51200',
         ]);
 
-        $documento = Documento::create($data);
+        $documento = Documento::create($request->only('titolo', 'descrizione', 'stato', 'cartella_id'));
+
+        $revisione = $documento->revisioni()->create([
+            'numero_revisione' => $request->numero_revisione,
+            'data_revisione'   => $request->data_revisione,
+            'redatto_da'       => $request->redatto_da,
+            'motivo'           => $request->motivo,
+            'note'             => $request->note_rev,
+        ]);
+
+        if ($request->hasFile('file')) {
+            $revisione->addMedia($request->file('file'))
+                ->usingName($documento->titolo . ' — Rev. ' . $request->numero_revisione)
+                ->toMediaCollection('file');
+        }
 
         return redirect()->route('documenti.show', $documento)->with('success', 'Documento creato.');
     }
 
     public function show(Documento $documento)
     {
-        $documento->load('revisioni');
+        $documento->load(['revisioni', 'revisioni.media', 'cartella']);
         return view('documenti.show', compact('documento'));
     }
 
     public function edit(Documento $documento)
     {
-        return view('documenti.edit', compact('documento'));
+        $cartelle = Cartella::orderBy('nome')->get();
+        return view('documenti.edit', compact('documento', 'cartelle'));
     }
 
     public function update(Request $request, Documento $documento)
     {
-        $data = $request->validate([
+        $request->validate([
             'titolo'      => 'required|string|max:255',
-            'categoria'   => 'nullable|string|max:255',
             'descrizione' => 'nullable|string',
             'stato'       => 'required|in:bozza,attivo,obsoleto',
+            'cartella_id' => 'nullable|exists:cartelle,id',
         ]);
 
-        $documento->update($data);
+        $documento->update($request->only('titolo', 'descrizione', 'stato', 'cartella_id'));
 
         return redirect()->route('documenti.show', $documento)->with('success', 'Documento aggiornato.');
     }
 
     public function destroy(Documento $documento)
     {
+        $cartellaId = $documento->cartella_id;
         $documento->delete();
+
+        if ($cartellaId) {
+            return redirect()->route('cartelle.show', $cartellaId)->with('success', 'Documento eliminato.');
+        }
         return redirect()->route('documenti.index')->with('success', 'Documento eliminato.');
     }
 
@@ -69,17 +93,16 @@ class DocumentoController extends Controller
     public function storeRevisione(Request $request, Documento $documento)
     {
         $request->validate([
-            'data_revisione' => 'required|date',
-            'redatto_da'     => 'nullable|string|max:255',
-            'motivo'         => 'nullable|string',
-            'note'           => 'nullable|string',
-            'file'           => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:20480',
+            'numero_revisione' => 'required|integer|min:0',
+            'data_revisione'   => 'required|date',
+            'redatto_da'       => 'nullable|string|max:255',
+            'motivo'           => 'nullable|string',
+            'note'             => 'nullable|string',
+            'file'             => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:51200',
         ]);
 
-        $numRev = $documento->revisioni()->max('numero_revisione') ?? -1;
-
         $revisione = $documento->revisioni()->create([
-            'numero_revisione' => $numRev + 1,
+            'numero_revisione' => $request->numero_revisione,
             'data_revisione'   => $request->data_revisione,
             'redatto_da'       => $request->redatto_da,
             'motivo'           => $request->motivo,
@@ -88,7 +111,7 @@ class DocumentoController extends Controller
 
         if ($request->hasFile('file')) {
             $revisione->addMedia($request->file('file'))
-                ->usingName($documento->titolo . ' — Rev. ' . $revisione->numero_revisione)
+                ->usingName($documento->titolo . ' — Rev. ' . $request->numero_revisione)
                 ->toMediaCollection('file');
         }
 

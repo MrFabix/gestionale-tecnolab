@@ -214,7 +214,7 @@
                                         <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ $all->name }}
                                     </a>
                                     <form action="{{ route('offerte.media.destroy', [$offerta, $all->id]) }}" method="POST"
-                                          onsubmit="return confirm('Eliminare?')">
+                                          data-confirm="Eliminare?">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></button>
                                     </form>

@@ -300,7 +300,7 @@
                                 <a href="{{ route('attrezzature.show', $a) }}" class="btn-action" title="Dettaglio"><i class="bi bi-eye"></i></a>
                                 <a href="{{ route('attrezzature.edit', $a) }}" class="btn-action" title="Modifica"><i class="bi bi-pencil"></i></a>
                                 <form action="{{ route('attrezzature.destroy', $a) }}" method="POST"
-                                      onsubmit="return confirm('Eliminare {{ addslashes($a->nome) }}?')">
+                                      data-confirm="Eliminare {{ addslashes($a->nome) }}?">
                                     @csrf @method('DELETE')
                                     <button type="submit" class="btn-action del" title="Elimina"><i class="bi bi-trash"></i></button>
                                 </form>

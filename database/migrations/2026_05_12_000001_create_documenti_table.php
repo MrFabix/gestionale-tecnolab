@@ -8,10 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('cartelle', function (Blueprint $table) {
+            $table->id();
+            $table->string('nome');
+            $table->foreignId('parent_id')->nullable()->constrained('cartelle')->cascadeOnDelete();
+            $table->timestamps();
+        });
+
         Schema::create('documenti', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('cartella_id')->nullable()->constrained('cartelle')->cascadeOnDelete();
             $table->string('titolo');
-            $table->string('categoria')->nullable();
             $table->text('descrizione')->nullable();
             $table->enum('stato', ['bozza', 'attivo', 'obsoleto'])->default('bozza');
             $table->timestamps();
@@ -33,5 +40,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('documento_revisioni');
         Schema::dropIfExists('documenti');
+        Schema::dropIfExists('cartelle');
     }
 };

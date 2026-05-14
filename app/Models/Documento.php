@@ -8,7 +8,12 @@ class Documento extends Model
 {
     protected $table = 'documenti';
 
-    protected $fillable = ['titolo', 'categoria', 'descrizione', 'stato'];
+    protected $fillable = ['cartella_id', 'titolo', 'descrizione', 'stato'];
+
+    public function cartella()
+    {
+        return $this->belongsTo(Cartella::class, 'cartella_id');
+    }
 
     public function revisioni()
     {
