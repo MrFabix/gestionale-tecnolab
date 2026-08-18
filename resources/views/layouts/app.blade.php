@@ -17,13 +17,17 @@
         .alert-success { display: none !important; }
         body {
             min-height: 100vh;
-            display: flex;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f5f6fa;
         }
         /* Sidebar */
         .sidebar {
             width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
             background: linear-gradient(180deg, #1f1f2e 0%, #181824 100%);
             color: #d1d1e0;
             display: flex;
@@ -64,7 +68,8 @@
         }
         /* Contenuto */
         .content {
-            flex-grow: 1;
+            margin-left: 250px;
+            width: calc(100% - 250px);
             padding: 2rem;
         }
         .content h1 {

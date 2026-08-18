@@ -12,7 +12,8 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\fmaxp\\\\Documents\\\\GitHub\\\\gestionale-tecnolab\" -Directory)",
       "Bash(Select-Object -First 20)",
       "Bash(del \"C:\\\\Users\\\\fmaxp\\\\Documents\\\\GitHub\\\\gestionale-tecnolab\\\\resources\\\\views\\\\documenti\\\\create.blade.php\")",
-      "Bash(del \"C:\\\\Users\\\\fmaxp\\\\Documents\\\\GitHub\\\\gestionale-tecnolab\\\\resources\\\\views\\\\documenti\\\\_form.blade.php\")"
+      "Bash(del \"C:\\\\Users\\\\fmaxp\\\\Documents\\\\GitHub\\\\gestionale-tecnolab\\\\resources\\\\views\\\\documenti\\\\_form.blade.php\")",
+      "Bash(sed -E 's/^\\\\s+//')"
     ]
   }
 }
