@@ -29,6 +29,20 @@ class LoginController extends Controller
     }
 
     /**
+     * Valida la richiesta di login dell'utente.
+     */
+    protected function validateLogin(Request $request)
+    {
+        $request->validate([
+            $this->username() => 'required|string',
+            'password' => 'required|string',
+        ], [
+            $this->username() . '.required' => 'Inserisci il nome utente.',
+            'password.required' => 'Inserisci la password.',
+        ]);
+    }
+
+    /**
      * Sovrascrive il login per usare password in chiaro (NON hashate).
      */
     protected function attemptLogin(Request $request)
@@ -43,5 +57,20 @@ class LoginController extends Controller
         }
 
         return false;
+    }
+
+    /**
+     * Risposta in caso di credenziali errate.
+     */
+    protected function sendFailedLoginResponse(Request $request)
+    {
+        $message = trans('auth.failed');
+        if ($message === 'auth.failed' || empty($message)) {
+            $message = 'Nome utente o password errati. Verifica i tuoi dati e riprova.';
+        }
+
+        throw \Illuminate\Validation\ValidationException::withMessages([
+            $this->username() => [$message],
+        ]);
     }
 }

@@ -1,632 +1,743 @@
 @extends('layouts.app')
 
 @section('content')
-    @php
-        $nAlert = $taratureScadute->count() + $taratureInScadenza->count()
-                + $manutenzioniScadute->count() + $manutenzioniInScadenza->count()
-                + $formazioniScadute->count() + $formazioniInScadenza->count();
-    @endphp
+    {{-- Google Font --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* ── Font ────────────────────────────────────────────────── */
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+        :root {
+            --tl-red: #d90429;
+            --tl-red-hover: #b71c1c;
+            --tl-dark: #111422;
+            --tl-card: #ffffff;
+            --tl-border: #e2e8f0;
+            --tl-text: #0f172a;
+            --tl-muted: #64748b;
+        }
 
-        .dash-root { font-family: 'DM Sans', sans-serif; }
+        .dash-wrap {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--tl-text);
+            max-width: 1650px;
+            margin: 0 auto;
+        }
 
-        /* ── Hero header ─────────────────────────────────────────── */
-        .dash-hero {
-            background: #0d0d0d;
-            border-radius: 20px;
-            padding: 2rem 2.5rem 1.75rem;
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── HERO COMPATTA DI BENVENUTO ─────────────────────────── */
+        .dash-welcome {
+            background: linear-gradient(135deg, #111422 0%, #1a1e30 60%, #0d0f18 100%);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
             margin-bottom: 1.75rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .dash-hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(ellipse 60% 80% at 90% -20%, rgba(192,0,0,.35) 0%, transparent 60%),
-                radial-gradient(ellipse 40% 60% at 10% 110%, rgba(192,0,0,.15) 0%, transparent 55%);
-            pointer-events: none;
-        }
-        .dash-hero h1 { font-size: 1.9rem; font-weight: 700; color: #fff; margin: 0; letter-spacing: -.5px; }
-        .dash-hero p  { color: rgba(255,255,255,.5); margin: .25rem 0 0; font-size: .9rem; }
-
-        /* ── Filtro periodo ──────────────────────────────────────── */
-        .period-bar {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: .75rem 1.25rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            gap: .5rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .period-bar .pill-p {
-            padding: .3rem .85rem;
-            border-radius: 999px;
-            font-size: .8rem;
-            font-weight: 600;
-            border: 1.5px solid #e5e7eb;
-            background: #f9fafb;
-            color: #374151;
-            text-decoration: none;
-            transition: all .15s;
-        }
-        .period-bar .pill-p:hover,
-        .period-bar .pill-p.active { border-color: #c00000; background: #c00000; color: #fff; }
-        .period-bar .sep { color: #d1d5db; margin: 0 .25rem; }
-
-        /* ── KPI cards ───────────────────────────────────────────── */
-        .kpi-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 1.4rem 1.5rem 1.2rem;
-            position: relative;
-            overflow: hidden;
-            transition: box-shadow .2s, transform .2s;
-            height: 100%;
-        }
-        .kpi-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,.08); transform: translateY(-2px); }
-        .kpi-card .kpi-icon {
-            width: 44px; height: 44px;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-        }
-        .kpi-card .kpi-value {
-            font-size: 2.4rem;
-            font-weight: 700;
-            line-height: 1;
-            letter-spacing: -1px;
-            font-family: 'DM Mono', monospace;
-            margin-bottom: .3rem;
-        }
-        .kpi-card .kpi-label { font-size: .8rem; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .5px; }
-        .kpi-card .kpi-sub   { font-size: .82rem; color: #6b7280; margin-top: .4rem; }
-        .kpi-card .kpi-accent {
-            position: absolute;
-            bottom: 0; right: 0;
-            width: 80px; height: 80px;
-            border-radius: 999px;
-            opacity: .07;
-            transform: translate(20px, 20px);
-        }
-
-        /* colori icone */
-        .ic-red    { background: #fee2e2; color: #c00000; }
-        .ic-blue   { background: #dbeafe; color: #1d4ed8; }
-        .ic-green  { background: #dcfce7; color: #15803d; }
-        .ic-amber  { background: #fef9c3; color: #92400e; }
-        .ic-purple { background: #ede9fe; color: #5b21b6; }
-        .ic-teal   { background: #ccfbf1; color: #0f766e; }
-        .ic-slate  { background: #f1f5f9; color: #475569; }
-
-        /* ── Section title ───────────────────────────────────────── */
-        .section-title {
-            font-size: .72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .8px;
-            color: #9ca3af;
-            margin-bottom: .85rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            color: #ffffff;
             display: flex;
             align-items: center;
-            gap: .5rem;
-        }
-        .section-title::after { content: ''; flex: 1; height: 1px; background: #f0f0f0; }
-
-        /* ── Chart card ──────────────────────────────────────────── */
-        .chart-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 1.25rem 1.5rem;
-            height: 100%;
-        }
-        .chart-card h6 { font-size: .85rem; font-weight: 700; color: #374151; margin-bottom: 1rem; }
-
-        /* ── Alert list ──────────────────────────────────────────── */
-        .alert-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            overflow: hidden;
-            margin-bottom: 1rem;
-        }
-        .alert-card .alert-head {
-            padding: .75rem 1.25rem;
-            display: flex;
             justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f5f5f5;
+            gap: 1.5rem;
+            flex-wrap: wrap;
         }
-        .alert-card .alert-head h6 { margin: 0; font-size: .88rem; font-weight: 700; }
-        .alert-item {
+
+        .dash-welcome h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .dash-welcome h1 span {
+            color: #ff4d6d;
+        }
+
+        .dash-welcome p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin: 0.25rem 0 0;
+        }
+
+        .hero-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.55rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .hero-status-pill.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+        }
+
+        .hero-status-pill.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: #6ee7b7;
+        }
+
+        /* ── COLLEGAMENTI VELOCI (QUICK ACTIONS GRID) ────────────── */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-btn-card {
+            background: #ffffff;
+            border: 1.5px solid var(--tl-border);
+            border-radius: 14px;
+            padding: 1.15rem 1.25rem;
             display: flex;
             align-items: center;
-            gap: .75rem;
-            padding: .65rem 1.25rem;
-            border-bottom: 1px solid #f9f9f9;
-            font-size: .83rem;
-            transition: background .1s;
+            gap: 0.95rem;
+            text-decoration: none;
+            color: var(--tl-text);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
-        .alert-item:hover { background: #fafafa; }
-        .alert-item:last-child { border-bottom: none; }
-        .alert-dot {
-            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-        }
-        .dot-red  { background: #ef4444; }
-        .dot-warn { background: #f59e0b; }
 
-        /* ── Feed attività ───────────────────────────────────────── */
-        .feed-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
+        .quick-btn-card:hover {
+            transform: translateY(-3px);
+            border-color: #cbd5e1;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            color: var(--tl-text);
+        }
+
+        .quick-btn-card.highlight {
+            background: linear-gradient(135deg, #d90429 0%, #b71c1c 100%);
+            border-color: #d90429;
+            color: #ffffff;
+        }
+
+        .quick-btn-card.highlight:hover {
+            box-shadow: 0 8px 24px rgba(217, 4, 41, 0.35);
+            color: #ffffff;
+        }
+
+        .quick-btn-card.highlight .quick-icon {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .quick-btn-card.highlight .quick-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .quick-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .quick-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0;
+        }
+
+        .quick-subtitle {
+            font-size: 0.75rem;
+            color: var(--tl-muted);
+            margin-top: 0.2rem;
+            line-height: 1.2;
+        }
+
+        /* ── SEZIONE ALERT (TUTTO VISIBILE SENZA TABS!) ─────────── */
+        .alert-section-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .alert-column-card {
+            background: #ffffff;
+            border: 1px solid var(--tl-border);
             border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
-        .feed-head { padding: .85rem 1.25rem; border-bottom: 1px solid #f5f5f5; }
-        .feed-head h6 { margin: 0; font-size: .88rem; font-weight: 700; }
-        .feed-item {
+
+        .alert-column-card.has-danger {
+            border-top: 4px solid #ef4444;
+        }
+
+        .alert-column-card.has-warning {
+            border-top: 4px solid #f59e0b;
+        }
+
+        .alert-column-card.is-clean {
+            border-top: 4px solid #10b981;
+        }
+
+        .alert-col-header {
+            padding: 1.1rem 1.3rem;
+            border-bottom: 1px solid var(--tl-border);
             display: flex;
             align-items: center;
-            gap: .85rem;
-            padding: .7rem 1.25rem;
-            border-bottom: 1px solid #f9f9f9;
-            font-size: .83rem;
+            justify-content: space-between;
+            background: #fbfcfd;
         }
-        .feed-item:last-child { border-bottom: none; }
-        .feed-icon {
-            width: 32px; height: 32px; border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: .85rem; flex-shrink: 0;
+
+        .alert-col-title {
+            font-size: 0.98rem;
+            font-weight: 800;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        .feed-meta { color: #9ca3af; font-size: .75rem; }
 
-        /* ── Donut mini ──────────────────────────────────────────── */
-        .donut-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
-        .donut-center { position: absolute; text-align: center; }
-        .donut-center .dv { font-size: 1.3rem; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
-        .donut-center .dl { font-size: .6rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; }
-
-        /* ── Animazioni ──────────────────────────────────────────── */
-        @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-        .kpi-card { animation: fadeUp .4s ease both; }
-        .kpi-card:nth-child(1) { animation-delay: .05s; }
-        .kpi-card:nth-child(2) { animation-delay: .10s; }
-        .kpi-card:nth-child(3) { animation-delay: .15s; }
-        .kpi-card:nth-child(4) { animation-delay: .20s; }
-        .kpi-card:nth-child(5) { animation-delay: .25s; }
-        .kpi-card:nth-child(6) { animation-delay: .30s; }
-
-        /* ── Badge alert globale ─────────────────────────────────── */
-        .badge-alert-glob {
-            background: #fee2e2; color: #b91c1c;
-            padding: .35rem .85rem; border-radius: 999px;
-            font-size: .78rem; font-weight: 700;
+        .alert-items-list {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            flex: 1;
         }
-        .empty-alert { padding: 1rem 1.25rem; color: #9ca3af; font-size: .83rem; }
+
+        .alert-entry {
+            padding: 1rem 1.3rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: background 0.15s ease;
+        }
+
+        .alert-entry:hover {
+            background: #f8fafc;
+        }
+
+        .alert-entry:last-child {
+            border-bottom: none;
+        }
+
+        .alert-entry.expired-entry {
+            background: #fffafa;
+        }
+
+        .alert-entry.expired-entry:hover {
+            background: #fff5f5;
+        }
+
+        .alert-pill {
+            padding: 0.28rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        .alert-pill.red {
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-pill.amber {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .clean-state-box {
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .clean-state-box i {
+            font-size: 2.4rem;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* ── AGENDA E IMPEGNI RECENTI ───────────────────────────── */
+        .agenda-card {
+            background: #ffffff;
+            border: 1px solid var(--tl-border);
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            padding: 1.25rem 1.4rem;
+            margin-top: 1.5rem;
+        }
+
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid var(--tl-red);
+            margin-bottom: 0.5rem;
+        }
+
+        .agenda-item:last-child {
+            margin-bottom: 0;
+        }
     </style>
 
-    <div class="dash-root">
+    <div class="dash-wrap">
 
-        {{-- ── HERO ──────────────────────────────────────────────── --}}
-        <div class="dash-hero">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1>Dashboard</h1>
-                    <p>Ciao, {{ Auth::user()->name }} — {{ now()->translatedFormat('l d F Y') }}</p>
-                </div>
+        {{-- ══════════════════════════════════════════════════════════
+             1. BENVENUTO E STATO GENERALE
+        ══════════════════════════════════════════════════════════ --}}
+        @php
+            $ora = (int) now()->format('H');
+            $saluto = ($ora >= 5 && $ora < 13) ? 'Buongiorno' : (($ora >= 13 && $ora < 19) ? 'Buon pomeriggio' : 'Buonasera');
+        @endphp
+
+        <div class="dash-welcome">
+            <div>
+                <h1>{{ $saluto }}, <span>{{ Auth::user()->name }}</span></h1>
+                <p>
+                    <i class="bi bi-calendar3 me-1"></i> {{ now()->translatedFormat('l, d F Y') }}
+                    &bull; Accesso rapido alle operazioni e controllo scadenze Tecnolab
+                </p>
+            </div>
+
+            <div>
                 @if($nAlert > 0)
-                    <span class="badge-alert-glob">
-            <i class="bi bi-exclamation-triangle me-1"></i>{{ $nAlert }} alert attivi
-        </span>
+                    <div class="hero-status-pill danger">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <span>{{ $nAlert }} Alert Richiedono Attenzione ({{ $totaleScaduti }} Scadute &bull; {{ $totaleInScadenza }} In Scadenza)</span>
+                    </div>
+                @else
+                    <div class="hero-status-pill success">
+                        <i class="bi bi-patch-check-fill fs-5"></i>
+                        <span>Tutte le Tarature e Corsi sono in Regola</span>
+                    </div>
                 @endif
             </div>
         </div>
 
-        {{-- ── FILTRO PERIODO ───────────────────────────────────── --}}
-        <div class="period-bar">
-            <span style="font-size:.8rem;font-weight:600;color:#6b7280;">Periodo:</span>
-            @foreach(['mese'=>'Questo mese','anno'=>'Quest\'anno','tutto'=>'Tutto'] as $p=>$l)
-                <a href="{{ route('home', array_merge(request()->except('periodo','dal','al'), ['periodo'=>$p])) }}"
-                   class="pill-p {{ $periodo===$p ? 'active' : '' }}">{{ $l }}</a>
-            @endforeach
-            <span class="sep">|</span>
-            <form method="GET" action="{{ route('home') }}" class="d-flex gap-2 align-items-center">
-                <input type="hidden" name="periodo" value="custom">
-                <input type="date" name="dal" class="form-control form-control-sm" style="border-radius:8px;font-size:.8rem;width:140px;"
-                       value="{{ $periodo==='custom' && $dal ? $dal->format('Y-m-d') : '' }}">
-                <span style="color:#9ca3af;font-size:.8rem;">→</span>
-                <input type="date" name="al" class="form-control form-control-sm" style="border-radius:8px;font-size:.8rem;width:140px;"
-                       value="{{ $periodo==='custom' && $al ? $al->format('Y-m-d') : '' }}">
-                <button type="submit" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:.8rem;">
-                    <i class="bi bi-filter"></i> Applica
-                </button>
-            </form>
+
+        {{-- ══════════════════════════════════════════════════════════
+             2. COLLEGAMENTI VELOCI (QUICK ACTIONS)
+        ══════════════════════════════════════════════════════════ --}}
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-lightning-charge-fill text-danger me-1"></i> Collegamenti Veloci
+            </h5>
+            <span class="text-muted small">Accesso immediato alle funzioni di laboratorio</span>
         </div>
 
-        {{-- ── KPI CARDS ────────────────────────────────────────── --}}
-        <p class="section-title"><i class="bi bi-grid-3x3-gap"></i> Panoramica</p>
+        <div class="quick-actions-grid">
+            {{-- Nuovo Report (Highlight Principale) --}}
+            <a href="{{ route('reports.wizard.step1') }}" class="quick-btn-card highlight">
+                <div class="quick-icon">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Nuovo Report</div>
+                    <div class="quick-subtitle">Crea rapporto di prova</div>
+                </div>
+            </a>
 
-        <div class="row g-3 mb-4">
+            {{-- Nuova Commessa --}}
+            <a href="{{ route('commesse.create') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #ede9fe; color: #6d28d9;">
+                    <i class="bi bi-briefcase-fill"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Nuova Commessa</div>
+                    <div class="quick-subtitle">{{ $countCommesse }} attive</div>
+                </div>
+            </a>
+
+            {{-- Nuova Offerta --}}
+            <a href="{{ route('offerte.create') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #dcfce7; color: #15803d;">
+                    <i class="bi bi-file-earmark-plus-fill"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Nuova Offerta</div>
+                    <div class="quick-subtitle">{{ $countOfferte }} in corso</div>
+                </div>
+            </a>
+
+            {{-- Calendario Prove --}}
+            <a href="{{ route('eventi.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #fee2e2; color: #dc2626;">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Calendario</div>
+                    <div class="quick-subtitle">Prove &amp; appuntamenti</div>
+                </div>
+            </a>
+
+            {{-- Attrezzature --}}
+            <a href="{{ route('attrezzature.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #e0f2fe; color: #0369a1;">
+                    <i class="bi bi-tools"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Attrezzature</div>
+                    <div class="quick-subtitle">{{ $countMacchine }} macchine</div>
+                </div>
+            </a>
+
+            {{-- Personale --}}
+            <a href="{{ route('personale.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #fef3c7; color: #b45309;">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Personale</div>
+                    <div class="quick-subtitle">{{ $countPersonale }} dipendenti</div>
+                </div>
+            </a>
+
             {{-- Clienti --}}
-            <div class="col-6 col-md-4 col-xl-2">
-                <div class="kpi-card">
-                    <div class="kpi-icon ic-blue"><i class="bi bi-people-fill"></i></div>
-                    <div class="kpi-value text-primary" style="color:#1d4ed8!important;">{{ $clientiTotali }}</div>
-                    <div class="kpi-label">Clienti</div>
-                    <div class="kpi-sub">+{{ $clientiNuovi }} nel periodo</div>
-                    <div class="kpi-accent" style="background:#1d4ed8;"></div>
+            <a href="{{ route('clienti.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #f1f5f9; color: #334155;">
+                    <i class="bi bi-people-fill"></i>
                 </div>
+                <div>
+                    <div class="quick-title">Clienti</div>
+                    <div class="quick-subtitle">{{ $countClienti }} anagrafiche</div>
+                </div>
+            </a>
+
+            {{-- Documenti --}}
+            <a href="{{ route('documenti.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #f3e8ff; color: #7e22ce;">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Documenti</div>
+                    <div class="quick-subtitle">Archivio e cartelle</div>
+                </div>
+            </a>
+        </div>
+
+
+        {{-- ══════════════════════════════════════════════════════════
+             3. SEZIONE ALERT IN PRIMO PIANO (TUTTO APERTO, NIENTE TABS!)
+        ══════════════════════════════════════════════════════════ --}}
+        <div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+            <div>
+                <h5 class="alert-section-title">
+                    <i class="bi bi-shield-exclamation text-danger"></i>
+                    Centro Scadenze &amp; Conformità di Laboratorio
+                </h5>
+                <p class="text-muted small mb-0">Tutti gli avvisi di taratura macchine, manutenzioni e abilitazioni del personale visibili a colpo d'occhio</p>
             </div>
 
-            {{-- Commesse aperte --}}
-            <div class="col-6 col-md-4 col-xl-2">
-                <div class="kpi-card">
-                    <div class="kpi-icon ic-green"><i class="bi bi-briefcase-fill"></i></div>
-                    <div class="kpi-value" style="color:#15803d;">{{ $commesseAperte }}</div>
-                    <div class="kpi-label">Commesse aperte</div>
-                    <div class="kpi-sub">{{ $commesseInLavoraz }} in lavorazione · {{ $commesseChiuse }} chiuse</div>
-                    <div class="kpi-accent" style="background:#15803d;"></div>
-                </div>
-            </div>
-
-            {{-- Report emessi --}}
-            <div class="col-6 col-md-4 col-xl-2">
-                <div class="kpi-card">
-                    <div class="kpi-icon ic-teal"><i class="bi bi-file-earmark-text-fill"></i></div>
-                    <div class="kpi-value" style="color:#0f766e;">{{ $reportPeriodo }}</div>
-                    <div class="kpi-label">Report emessi</div>
-                    <div class="kpi-sub">{{ $reportTotali }} totali</div>
-                    <div class="kpi-accent" style="background:#0f766e;"></div>
-                </div>
-            </div>
-
-            {{-- Offerte accettate --}}
-            <div class="col-6 col-md-4 col-xl-2">
-                <div class="kpi-card">
-                    <div class="kpi-icon ic-purple"><i class="bi bi-file-earmark-check-fill"></i></div>
-                    <div class="kpi-value" style="color:#5b21b6;">{{ $offerteAccettate }}</div>
-                    <div class="kpi-label">Offerte accettate</div>
-                    <div class="kpi-sub">{{ $offerteBozza }} bozze · {{ $offerteInviate }} inviate</div>
-                    <div class="kpi-accent" style="background:#5b21b6;"></div>
-                </div>
-            </div>
-
-            {{-- Valore offerte --}}
-            <div class="col-6 col-md-4 col-xl-2">
-                <div class="kpi-card">
-                    <div class="kpi-icon ic-amber"><i class="bi bi-currency-euro"></i></div>
-                    <div class="kpi-value" style="color:#92400e;font-size:1.6rem;">{{ number_format($valoreAccettate,0,',','.') }}</div>
-                    <div class="kpi-label">Valore offerte (€)</div>
-                    <div class="kpi-sub">Offerte accettate nel periodo</div>
-                    <div class="kpi-accent" style="background:#92400e;"></div>
-                </div>
-            </div>
-
-            {{-- Alert totali --}}
-            <div class="col-6 col-md-4 col-xl-2">
-                <div class="kpi-card" style="{{ $nAlert > 0 ? 'border-color:#fca5a5;' : '' }}">
-                    <div class="kpi-icon ic-red"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                    <div class="kpi-value" style="color:#c00000;">{{ $nAlert }}</div>
-                    <div class="kpi-label">Alert attivi</div>
-                    <div class="kpi-sub">
-                        {{ $taratureScadute->count() + $taratureInScadenza->count() }} tarature ·
-                        {{ $formazioniScadute->count() + $formazioniInScadenza->count() }} formaz.
-                    </div>
-                    <div class="kpi-accent" style="background:#c00000;"></div>
-                </div>
+            <div>
+                @if($totaleScaduti > 0)
+                    <span class="badge bg-danger px-3 py-2 fw-bold fs-6 rounded-pill">
+                        <i class="bi bi-exclamation-diamond-fill me-1"></i> {{ $totaleScaduti }} Fuori Norma
+                    </span>
+                @endif
+                @if($totaleInScadenza > 0)
+                    <span class="badge bg-warning text-dark px-3 py-2 fw-bold fs-6 rounded-pill ms-1">
+                        <i class="bi bi-clock-history me-1"></i> {{ $totaleInScadenza }} In Scadenza nei 30gg
+                    </span>
+                @endif
             </div>
         </div>
 
-        {{-- ── GRAFICI ──────────────────────────────────────────── --}}
-        <p class="section-title"><i class="bi bi-bar-chart-fill"></i> Andamento</p>
+        {{-- 3 COLONNE CHIARE E APERTE CONTEMPORANEAMENTE --}}
+        <div class="row g-3">
 
-        <div class="row g-3 mb-4">
-            {{-- Grafico report per mese --}}
-            <div class="col-md-7">
-                <div class="chart-card">
-                    <h6><i class="bi bi-file-earmark-text me-1 text-muted"></i>Report emessi — ultimi 6 mesi</h6>
-                    <canvas id="chartReport" height="160"></canvas>
-                </div>
-            </div>
-
-            {{-- Donut commesse --}}
-            <div class="col-md-2">
-                <div class="chart-card text-center">
-                    <h6><i class="bi bi-briefcase me-1 text-muted"></i>Commesse</h6>
-                    <div class="donut-wrap" style="width:120px;height:120px;margin:0 auto;">
-                        <canvas id="chartCommesse"></canvas>
-                        <div class="donut-center">
-                            <div class="dv" style="font-size:1.1rem;">{{ $commesseAperte + $commesseInLavoraz + $commesseChiuse }}</div>
-                            <div class="dl">totali</div>
+            {{-- ── COLONNA 1: TARATURE ATTREZZATURE ── --}}
+            <div class="col-lg-4">
+                @php
+                    $tarHasDanger = $taratureScadute->isNotEmpty();
+                    $tarHasWarning = $taratureInScadenza->isNotEmpty();
+                    $tarClass = $tarHasDanger ? 'has-danger' : ($tarHasWarning ? 'has-warning' : 'is-clean');
+                @endphp
+                <div class="alert-column-card {{ $tarClass }}">
+                    <div class="alert-col-header">
+                        <div class="alert-col-title">
+                            <i class="bi bi-tools text-primary"></i>
+                            <span>Tarature Strumenti</span>
                         </div>
+                        <span class="badge {{ ($taratureScadute->count() + $taratureInScadenza->count()) > 0 ? 'bg-danger' : 'bg-success' }} rounded-pill px-2 py-1">
+                            {{ $taratureScadute->count() + $taratureInScadenza->count() }}
+                        </span>
                     </div>
-                    <div class="mt-2" style="font-size:.72rem;line-height:1.8;">
-                        <span style="color:#15803d;">●</span> Aperte {{ $commesseAperte }}&nbsp;
-                        <span style="color:#f59e0b;">●</span> In lav. {{ $commesseInLavoraz }}<br>
-                        <span style="color:#9ca3af;">●</span> Chiuse {{ $commesseChiuse }}
-                    </div>
-                </div>
-            </div>
 
-            {{-- Donut offerte --}}
-            <div class="col-md-3">
-                <div class="chart-card text-center">
-                    <h6><i class="bi bi-file-earmark-text me-1 text-muted"></i>Offerte periodo</h6>
-                    <div class="donut-wrap" style="width:120px;height:120px;margin:0 auto;">
-                        <canvas id="chartOfferte"></canvas>
-                        <div class="donut-center">
-                            <div class="dv" style="font-size:1.1rem;">{{ $offerteBozza+$offerteInviate+$offerteAccettate+$offerteRifiutate }}</div>
-                            <div class="dl">totali</div>
+                    @if($taratureScadute->isNotEmpty() || $taratureInScadenza->isNotEmpty())
+                        <ul class="alert-items-list">
+                            {{-- Scadute --}}
+                            @foreach($taratureScadute as $t)
+                                <li class="alert-entry expired-entry">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $t->attrezzatura->nome }}</div>
+                                        <div class="text-muted small">
+                                            @if($t->attrezzatura->codice) <span class="badge bg-light text-muted border mono me-1">{{ $t->attrezzatura->codice }}</span> @endif
+                                            Scaduta: <strong class="text-danger mono">{{ $t->data_scadenza->format('d/m/Y') }}</strong>
+                                            ({{ $t->data_scadenza->diffForHumans() }})
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        <span class="alert-pill red"><i class="bi bi-x-circle-fill"></i> SCADUTA</span>
+                                        <a href="{{ route('attrezzature.show', $t->attrezzatura_id) }}" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size:0.75rem;">
+                                            Vedi scheda
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+
+                            {{-- In Scadenza --}}
+                            @foreach($taratureInScadenza as $t)
+                                <li class="alert-entry">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $t->attrezzatura->nome }}</div>
+                                        <div class="text-muted small">
+                                            @if($t->attrezzatura->codice) <span class="badge bg-light text-muted border mono me-1">{{ $t->attrezzatura->codice }}</span> @endif
+                                            Scade: <strong class="text-warning mono">{{ $t->data_scadenza->format('d/m/Y') }}</strong>
+                                            (tra {{ now()->diffInDays($t->data_scadenza) }} gg)
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        <span class="alert-pill amber"><i class="bi bi-clock-history"></i> IN SCADENZA</span>
+                                        <a href="{{ route('attrezzature.show', $t->attrezzatura_id) }}" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-semibold" style="font-size:0.75rem;">
+                                            Vedi scheda
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="clean-state-box">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <h6 class="fw-bold text-dark mb-1">Tarature in Regola</h6>
+                            <p class="small text-muted mb-0">Nessuna taratura scaduta o in scadenza nei prossimi 30 giorni.</p>
                         </div>
-                    </div>
-                    <div class="mt-2" style="font-size:.72rem;line-height:1.8;">
-                        <span style="color:#6b7280;">●</span> Bozza {{ $offerteBozza }}&nbsp;
-                        <span style="color:#1d4ed8;">●</span> Inv. {{ $offerteInviate }}<br>
-                        <span style="color:#15803d;">●</span> Acc. {{ $offerteAccettate }}&nbsp;
-                        <span style="color:#b91c1c;">●</span> Rif. {{ $offerteRifiutate }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- ── ALERT SEZIONE ────────────────────────────────────── --}}
-        <p class="section-title"><i class="bi bi-exclamation-triangle"></i> Alert & Scadenze</p>
-
-        <div class="row g-3 mb-4">
-
-            {{-- Tarature --}}
-            <div class="col-md-4">
-                <div class="alert-card">
-                    <div class="alert-head">
-                        <h6><i class="bi bi-patch-check me-1 text-muted"></i>Tarature attrezzature</h6>
-                        @if($taratureScadute->count() + $taratureInScadenza->count() > 0)
-                            <span class="badge bg-danger">{{ $taratureScadute->count() + $taratureInScadenza->count() }}</span>
-                        @endif
-                    </div>
-                    @foreach($taratureScadute as $t)
-                        <div class="alert-item">
-                            <span class="alert-dot dot-red"></span>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $t->attrezzatura->nome }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">Scaduta il {{ $t->data_scadenza->format('d/m/Y') }}</div>
-                            </div>
-                            <a href="{{ route('attrezzature.show', $t->attrezzatura) }}" class="btn btn-xs btn-outline-danger btn-sm py-0 px-2" style="font-size:.72rem;">Vedi</a>
-                        </div>
-                    @endforeach
-                    @foreach($taratureInScadenza as $t)
-                        <div class="alert-item">
-                            <span class="alert-dot dot-warn"></span>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $t->attrezzatura->nome }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">Scade il {{ $t->data_scadenza->format('d/m/Y') }}</div>
-                            </div>
-                            <a href="{{ route('attrezzature.show', $t->attrezzatura) }}" class="btn btn-xs btn-outline-warning btn-sm py-0 px-2" style="font-size:.72rem;">Vedi</a>
-                        </div>
-                    @endforeach
-                    @if($taratureScadute->isEmpty() && $taratureInScadenza->isEmpty())
-                        <div class="empty-alert"><i class="bi bi-check-circle text-success me-1"></i>Tutto in regola</div>
                     @endif
                 </div>
             </div>
 
-            {{-- Manutenzioni --}}
-            <div class="col-md-4">
-                <div class="alert-card">
-                    <div class="alert-head">
-                        <h6><i class="bi bi-wrench-adjustable me-1 text-muted"></i>Manutenzioni</h6>
-                        @if($manutenzioniScadute->count() + $manutenzioniInScadenza->count() > 0)
-                            <span class="badge bg-danger">{{ $manutenzioniScadute->count() + $manutenzioniInScadenza->count() }}</span>
-                        @endif
+            {{-- ── COLONNA 2: MANUTENZIONI MACCHINARI ── --}}
+            <div class="col-lg-4">
+                @php
+                    $manHasDanger = $manutenzioniScadute->isNotEmpty();
+                    $manHasWarning = $manutenzioniInScadenza->isNotEmpty();
+                    $manClass = $manHasDanger ? 'has-danger' : ($manHasWarning ? 'has-warning' : 'is-clean');
+                @endphp
+                <div class="alert-column-card {{ $manClass }}">
+                    <div class="alert-col-header">
+                        <div class="alert-col-title">
+                            <i class="bi bi-wrench-adjustable text-warning"></i>
+                            <span>Manutenzioni Macchine</span>
+                        </div>
+                        <span class="badge {{ ($manutenzioniScadute->count() + $manutenzioniInScadenza->count()) > 0 ? 'bg-danger' : 'bg-success' }} rounded-pill px-2 py-1">
+                            {{ $manutenzioniScadute->count() + $manutenzioniInScadenza->count() }}
+                        </span>
                     </div>
-                    @foreach($manutenzioniScadute as $m)
-                        <div class="alert-item">
-                            <span class="alert-dot dot-red"></span>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $m->attrezzatura->nome }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">Scaduta il {{ $m->prossima_scadenza->format('d/m/Y') }}</div>
-                            </div>
-                            <a href="{{ route('attrezzature.show', $m->attrezzatura) }}" class="btn btn-xs btn-outline-danger btn-sm py-0 px-2" style="font-size:.72rem;">Vedi</a>
+
+                    @if($manutenzioniScadute->isNotEmpty() || $manutenzioniInScadenza->isNotEmpty())
+                        <ul class="alert-items-list">
+                            {{-- Scadute --}}
+                            @foreach($manutenzioniScadute as $m)
+                                <li class="alert-entry expired-entry">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $m->attrezzatura->nome }}</div>
+                                        <div class="text-muted small">
+                                            Tipo: <strong>{{ ucfirst($m->tipo ?? 'Manutenzione') }}</strong> &bull;
+                                            Scaduta: <strong class="text-danger mono">{{ $m->prossima_scadenza->format('d/m/Y') }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        <span class="alert-pill red"><i class="bi bi-x-circle-fill"></i> SCADUTA</span>
+                                        <a href="{{ route('attrezzature.show', $m->attrezzatura_id) }}" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size:0.75rem;">
+                                            Vedi scheda
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+
+                            {{-- In Scadenza --}}
+                            @foreach($manutenzioniInScadenza as $m)
+                                <li class="alert-entry">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $m->attrezzatura->nome }}</div>
+                                        <div class="text-muted small">
+                                            Tipo: <strong>{{ ucfirst($m->tipo ?? 'Manutenzione') }}</strong> &bull;
+                                            Prevista: <strong class="text-warning mono">{{ $m->prossima_scadenza->format('d/m/Y') }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        <span class="alert-pill amber"><i class="bi bi-clock-history"></i> IN SCADENZA</span>
+                                        <a href="{{ route('attrezzature.show', $m->attrezzatura_id) }}" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-semibold" style="font-size:0.75rem;">
+                                            Vedi scheda
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="clean-state-box">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <h6 class="fw-bold text-dark mb-1">Manutenzioni in Regola</h6>
+                            <p class="small text-muted mb-0">Tutti i macchinari risultano regolarmente manutenuti.</p>
                         </div>
-                    @endforeach
-                    @foreach($manutenzioniInScadenza as $m)
-                        <div class="alert-item">
-                            <span class="alert-dot dot-warn"></span>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $m->attrezzatura->nome }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">Scade il {{ $m->prossima_scadenza->format('d/m/Y') }}</div>
-                            </div>
-                            <a href="{{ route('attrezzature.show', $m->attrezzatura) }}" class="btn btn-xs btn-outline-warning btn-sm py-0 px-2" style="font-size:.72rem;">Vedi</a>
-                        </div>
-                    @endforeach
-                    @if($manutenzioniScadute->isEmpty() && $manutenzioniInScadenza->isEmpty())
-                        <div class="empty-alert"><i class="bi bi-check-circle text-success me-1"></i>Tutto in regola</div>
                     @endif
                 </div>
             </div>
 
-            {{-- Formazione personale --}}
-            <div class="col-md-4">
-                <div class="alert-card">
-                    <div class="alert-head">
-                        <h6><i class="bi bi-mortarboard me-1 text-muted"></i>Formazione personale</h6>
-                        @if($formazioniScadute->count() + $formazioniInScadenza->count() > 0)
-                            <span class="badge bg-danger">{{ $formazioniScadute->count() + $formazioniInScadenza->count() }}</span>
-                        @endif
+            {{-- ── COLONNA 3: FORMAZIONE & ABILITAZIONI PERSONALE ── --}}
+            <div class="col-lg-4">
+                @php
+                    $formHasDanger = $formazioniScadute->isNotEmpty();
+                    $formHasWarning = $formazioniInScadenza->isNotEmpty();
+                    $formClass = $formHasDanger ? 'has-danger' : ($formHasWarning ? 'has-warning' : 'is-clean');
+                @endphp
+                <div class="alert-column-card {{ $formClass }}">
+                    <div class="alert-col-header">
+                        <div class="alert-col-title">
+                            <i class="bi bi-mortarboard text-info"></i>
+                            <span>Abilitazioni &amp; Corsi Personale</span>
+                        </div>
+                        <span class="badge {{ ($formazioniScadute->count() + $formazioniInScadenza->count()) > 0 ? 'bg-danger' : 'bg-success' }} rounded-pill px-2 py-1">
+                            {{ $formazioniScadute->count() + $formazioniInScadenza->count() }}
+                        </span>
                     </div>
-                    @foreach($formazioniScadute as $f)
-                        <div class="alert-item">
-                            <span class="alert-dot dot-red"></span>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $f->personale->cognome }} {{ $f->personale->nome }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">{{ Str::limit($f->titolo,35) }} — scaduta {{ $f->data_scadenza->format('d/m/Y') }}</div>
-                            </div>
-                            <a href="{{ route('personale.show', $f->personale) }}" class="btn btn-xs btn-outline-danger btn-sm py-0 px-2" style="font-size:.72rem;">Vedi</a>
+
+                    @if($formazioniScadute->isNotEmpty() || $formazioniInScadenza->isNotEmpty())
+                        <ul class="alert-items-list">
+                            {{-- Scadute --}}
+                            @foreach($formazioniScadute as $f)
+                                <li class="alert-entry expired-entry">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $f->personale->cognome }} {{ $f->personale->nome }}</div>
+                                        <div class="text-muted small">
+                                            Corso: <strong>{{ Str::limit($f->titolo, 28) }}</strong> &bull;
+                                            Scaduto: <strong class="text-danger mono">{{ $f->data_scadenza->format('d/m/Y') }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        <span class="alert-pill red"><i class="bi bi-x-circle-fill"></i> SCADUTO</span>
+                                        <a href="{{ route('personale.show', $f->personale_id) }}" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size:0.75rem;">
+                                            Vedi scheda
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+
+                            {{-- In Scadenza --}}
+                            @foreach($formazioniInScadenza as $f)
+                                <li class="alert-entry">
+                                    <div>
+                                        <div class="fw-bold text-dark">{{ $f->personale->cognome }} {{ $f->personale->nome }}</div>
+                                        <div class="text-muted small">
+                                            Corso: <strong>{{ Str::limit($f->titolo, 28) }}</strong> &bull;
+                                            Scade: <strong class="text-warning mono">{{ $f->data_scadenza->format('d/m/Y') }}</strong>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column align-items-end gap-1">
+                                        <span class="alert-pill amber"><i class="bi bi-clock-history"></i> IN SCADENZA</span>
+                                        <a href="{{ route('personale.show', $f->personale_id) }}" class="btn btn-sm btn-outline-warning text-dark py-0 px-2 fw-semibold" style="font-size:0.75rem;">
+                                            Vedi scheda
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="clean-state-box">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <h6 class="fw-bold text-dark mb-1">Corsi del Personale in Regola</h6>
+                            <p class="small text-muted mb-0">Nessuna abilitazione o corso scaduto nel team.</p>
                         </div>
-                    @endforeach
-                    @foreach($formazioniInScadenza as $f)
-                        <div class="alert-item">
-                            <span class="alert-dot dot-warn"></span>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $f->personale->cognome }} {{ $f->personale->nome }}</div>
-                                <div class="text-muted" style="font-size:.75rem;">{{ Str::limit($f->titolo,35) }} — scade {{ $f->data_scadenza->format('d/m/Y') }}</div>
-                            </div>
-                            <a href="{{ route('personale.show', $f->personale) }}" class="btn btn-xs btn-outline-warning btn-sm py-0 px-2" style="font-size:.72rem;">Vedi</a>
-                        </div>
-                    @endforeach
-                    @if($formazioniScadute->isEmpty() && $formazioniInScadenza->isEmpty())
-                        <div class="empty-alert"><i class="bi bi-check-circle text-success me-1"></i>Tutto in regola</div>
                     @endif
                 </div>
             </div>
+
         </div>
 
-        {{-- ── FEED ATTIVITÀ ────────────────────────────────────── --}}
-        <p class="section-title"><i class="bi bi-activity"></i> Attività recenti</p>
 
-        <div class="row g-3 mb-2">
-            {{-- Ultimi report --}}
-            <div class="col-md-6">
-                <div class="feed-card">
-                    <div class="feed-head d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0"><i class="bi bi-file-earmark-text me-1 text-muted"></i>Ultimi report</h6>
-                        <a href="{{ route('reports.index') }}" style="font-size:.78rem;color:#c00000;text-decoration:none;">Vedi tutti →</a>
+        {{-- ══════════════════════════════════════════════════════════
+             4. OFFERTE IN SCADENZA (AVVISO RAPIDO SE PRESENTI)
+        ══════════════════════════════════════════════════════════ --}}
+        @if($offerteInScadenza->isNotEmpty())
+            <div class="mt-4 p-3 bg-warning-subtle border border-warning rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+                    <div>
+                        <strong class="text-dark">Ci sono {{ $offerteInScadenza->count() }} offerte inviate con validità in scadenza nei prossimi 15 giorni:</strong>
+                        <span class="text-muted ms-1">
+                            @foreach($offerteInScadenza as $o)
+                                Offerta <strong>{{ $o->numero }}</strong> ({{ $o->cliente->ragione_sociale }} - scade {{ $o->validita_fino->format('d/m/Y') }})@if(!$loop->last), @endif
+                            @endforeach
+                        </span>
                     </div>
-                    @forelse($ultimiReport as $r)
-                        <div class="feed-item">
-                            <div class="feed-icon ic-teal"><i class="bi bi-file-earmark-text"></i></div>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $r->rapporto_numero ?? 'N/A' }}
-                                    <span class="badge bg-light text-muted ms-1" style="font-size:.68rem;">{{ ucfirst($r->tipo_prova) }}</span>
+                </div>
+                <a href="{{ route('offerte.index') }}" class="btn btn-sm btn-dark fw-semibold px-3 py-1">
+                    Gestisci Offerte &rarr;
+                </a>
+            </div>
+        @endif
+
+
+        {{-- ══════════════════════════════════════════════════════════
+             5. PROSSIMI EVENTI & APPUNTAMENTI IN AGENDA
+        ══════════════════════════════════════════════════════════ --}}
+        @if($prossimiEventi->isNotEmpty())
+            <div class="agenda-card">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-calendar-check text-danger me-1"></i> Prossimi Eventi &amp; Prove in Agenda
+                    </h6>
+                    <a href="{{ route('eventi.index') }}" class="text-decoration-none text-danger fw-semibold small">
+                        Apri Calendario Completo &rarr;
+                    </a>
+                </div>
+
+                <div class="row g-2">
+                    @foreach($prossimiEventi as $ev)
+                        <div class="col-md-6 col-lg-3">
+                            <div class="agenda-item" style="border-left-color: {{ $ev->colore ?? 'var(--tl-red)' }};">
+                                <div class="flex-grow-1 text-truncate">
+                                    <div class="fw-bold text-dark small text-truncate">{{ $ev->titolo }}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ \Carbon\Carbon::parse($ev->inizio)->translatedFormat('d M H:i') }}
+                                    </div>
                                 </div>
-                                <div class="feed-meta">{{ $r->commessa?->cliente?->ragione_sociale ?? '—' }} · {{ $r->created_at->diffForHumans() }}</div>
+                                <span class="badge bg-light text-muted border" style="font-size: 0.68rem;">
+                                    {{ \Carbon\Carbon::parse($ev->inizio)->diffForHumans() }}
+                                </span>
                             </div>
-                            <a href="{{ route('reports.show', $r) }}" style="font-size:.75rem;color:#9ca3af;text-decoration:none;">Apri →</a>
                         </div>
-                    @empty
-                        <div class="empty-alert">Nessun report recente.</div>
-                    @endforelse
+                    @endforeach
                 </div>
             </div>
+        @endif
 
-            {{-- Ultime offerte --}}
-            <div class="col-md-6">
-                <div class="feed-card">
-                    <div class="feed-head d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0"><i class="bi bi-file-earmark-text me-1 text-muted"></i>Ultime offerte</h6>
-                        <a href="{{ route('offerte.index') }}" style="font-size:.78rem;color:#c00000;text-decoration:none;">Vedi tutte →</a>
-                    </div>
-                    @forelse($ultimiOfferte as $o)
-                        @php
-                            $bc = ['bozza'=>'bg-secondary','inviata'=>'bg-primary','accettata'=>'bg-success','rifiutata'=>'bg-danger'][$o->stato] ?? 'bg-secondary';
-                        @endphp
-                        <div class="feed-item">
-                            <div class="feed-icon ic-purple"><i class="bi bi-file-earmark-check"></i></div>
-                            <div class="flex-fill">
-                                <div class="fw-semibold">{{ $o->numero }}
-                                    <span class="badge {{ $bc }} ms-1" style="font-size:.68rem;">{{ ucfirst($o->stato) }}</span>
-                                </div>
-                                <div class="feed-meta">{{ $o->cliente->ragione_sociale }} · {{ $o->created_at->diffForHumans() }}</div>
-                            </div>
-                            <a href="{{ route('offerte.show', $o) }}" style="font-size:.75rem;color:#9ca3af;text-decoration:none;">Apri →</a>
-                        </div>
-                    @empty
-                        <div class="empty-alert">Nessuna offerta recente.</div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-
-    </div>{{-- /dash-root --}}
-@endsection
-
-@section('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-        // ── Palette ──────────────────────────────────────────────────
-        const RED    = '#c00000';
-        const RED15  = 'rgba(192,0,0,.15)';
-        const BLUE   = '#1d4ed8';
-        const GREEN  = '#15803d';
-        const AMBER  = '#f59e0b';
-        const GRAY   = '#9ca3af';
-        const PURPLE = '#5b21b6';
-
-        Chart.defaults.font.family = "'DM Sans', sans-serif";
-        Chart.defaults.color = '#9ca3af';
-
-        // ── Report per mese (bar chart) ───────────────────────────────
-        const ctxR = document.getElementById('chartReport').getContext('2d');
-        const gradR = ctxR.createLinearGradient(0,0,0,200);
-        gradR.addColorStop(0, 'rgba(192,0,0,.25)');
-        gradR.addColorStop(1, 'rgba(192,0,0,.02)');
-
-        new Chart(ctxR, {
-            type: 'bar',
-            data: {
-                labels: {!! json_encode($reportPerMese->pluck('mese')) !!},
-                datasets: [{
-                    label: 'Report emessi',
-                    data: {!! json_encode($reportPerMese->pluck('count')) !!},
-                    backgroundColor: gradR,
-                    borderColor: RED,
-                    borderWidth: 2,
-                    borderRadius: 8,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false }, border: { display: false } },
-                    y: { grid: { color: '#f5f5f5' }, border: { display: false }, ticks: { precision: 0 } }
-                }
-            }
-        });
-
-        // ── Donut options comune ──────────────────────────────────────
-        const donutOpts = (data, labels, colors) => ({
-            type: 'doughnut',
-            data: {
-                labels,
-                datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }]
-            },
-            options: {
-                cutout: '74%',
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.parsed } }
-                }
-            }
-        });
-
-        // ── Commesse donut ────────────────────────────────────────────
-        new Chart(document.getElementById('chartCommesse'),
-            donutOpts(
-                [{{ $commesseAperte }}, {{ $commesseInLavoraz }}, {{ $commesseChiuse }}],
-                ['Aperte', 'In lavorazione', 'Chiuse'],
-                [GREEN, AMBER, GRAY]
-            )
-        );
-
-        // ── Offerte donut ─────────────────────────────────────────────
-        new Chart(document.getElementById('chartOfferte'),
-            donutOpts(
-                [{{ $offerteBozza }}, {{ $offerteInviate }}, {{ $offerteAccettate }}, {{ $offerteRifiutate }}],
-                ['Bozza', 'Inviate', 'Accettate', 'Rifiutate'],
-                [GRAY, BLUE, GREEN, RED]
-            )
-        );
-    </script>
+    </div>{{-- /dash-wrap --}}
 @endsection
