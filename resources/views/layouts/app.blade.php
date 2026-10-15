@@ -28,43 +28,81 @@
             left: 0;
             height: 100vh;
             overflow-y: auto;
-            background: linear-gradient(180deg, #1f1f2e 0%, #181824 100%);
+            background: linear-gradient(180deg, #181926 0%, #12131c 100%);
             color: #d1d1e0;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.25);
+            z-index: 1000;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.22);
         }
         .sidebar .brand {
-            font-size: 1.4rem;
-            font-weight: 600;
-            padding: 1.5rem 1rem;
+            padding: 1.25rem 1rem 1rem 1rem;
             text-align: center;
-            color: #fff;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.12);
+        }
+        .sidebar-section-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #717790;
+            padding: 0.9rem 1.1rem 0.25rem 1.1rem;
+            user-select: none;
+            list-style: none;
+        }
+        .sidebar-section-title:first-of-type {
+            padding-top: 0.4rem;
         }
         .sidebar .nav-link {
-            color: #b0b3c0;
-            font-size: 0.95rem;
+            color: #a6abbd;
+            font-size: 0.875rem;
             font-weight: 500;
-            padding: 0.75rem 1.2rem;
-            border-radius: 8px;
-            margin: 4px 8px;
+            padding: 0.48rem 0.85rem;
+            border-radius: 7px;
+            margin: 1.5px 8px;
             display: flex;
             align-items: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            position: relative;
         }
         .sidebar .nav-link i {
-            font-size: 1.2rem;
-            margin-right: 12px;
+            font-size: 1.05rem;
+            width: 20px;
+            text-align: center;
+            margin-right: 11px;
+            color: #70758d;
+            transition: color 0.2s ease;
         }
-        .sidebar .nav-link.active,
         .sidebar .nav-link:hover {
-            background: #2d2d44;
-            color: #fff;
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
         }
-        .sidebar .nav-link.active i,
         .sidebar .nav-link:hover i {
-            color: #0d6efd;
+            color: #e0e2ec;
+        }
+        .sidebar .nav-link.active {
+            background: rgba(217, 4, 41, 0.14);
+            color: #ffffff;
+            font-weight: 600;
+            border-left: 3px solid #d90429;
+            padding-left: calc(0.85rem - 3px);
+        }
+        .sidebar .nav-link.active i {
+            color: #d90429;
         }
         /* Contenuto */
         .content {
@@ -92,13 +130,60 @@
             <img src="{{ asset('img/logo.png') }}" alt="Logo" style="max-width:200px; max-height:120px;">
         </a>
     </div>
-    <ul class="nav flex-column mt-3">
+    <ul class="nav flex-column mt-2 mb-3">
+        {{-- PANORAMICA --}}
+        <li class="sidebar-section-title">Panoramica</li>
+        <li class="nav-item">
+            <a href="{{ route('home') }}"
+               class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('eventi.index') }}"
+               class="nav-link {{ request()->routeIs('eventi.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar3"></i> Calendario
+            </a>
+        </li>
+
+        {{-- COMMERCIALE --}}
+        <li class="sidebar-section-title">Commerciale</li>
         <li class="nav-item">
             <a href="{{ route('clienti.index') }}"
                class="nav-link {{ request()->routeIs('clienti.*') ? 'active' : '' }}">
                 <i class="bi bi-people-fill"></i> Clienti
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('offerte.index') }}"
+               class="nav-link {{ request()->routeIs('offerte.*') ? 'active' : '' }}">
+                <i class="bi bi-receipt"></i> Offerte
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('commesse.index') }}"
+               class="nav-link {{ request()->routeIs('commesse.*') ? 'active' : '' }}">
+                <i class="bi bi-briefcase-fill"></i> Commesse
+            </a>
+        </li>
+
+        {{-- LABORATORIO --}}
+        <li class="sidebar-section-title">Laboratorio & Prove</li>
+        <li class="nav-item">
+            <a href="{{ route('reports.index') }}"
+               class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-check-fill"></i> Rapporti di Prova
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('attrezzature.index') }}"
+               class="nav-link {{ request()->routeIs('attrezzature.*') ? 'active' : '' }}">
+                <i class="bi bi-tools"></i> Attrezzature
+            </a>
+        </li>
+
+        {{-- ACQUISTI & FORNITORI --}}
+        <li class="sidebar-section-title">Acquisti & Fornitori</li>
         <li class="nav-item">
             <a href="{{ route('fornitori.index') }}"
                class="nav-link {{ request()->routeIs('fornitori.*') ? 'active' : '' }}">
@@ -117,45 +202,18 @@
                 <i class="bi bi-bag-check-fill"></i> Ordini Acquisto (ODA)
             </a>
         </li>
-        <li class="nav-item">
-            <a href="{{ route('commesse.index') }}"
-               class="nav-link {{ request()->routeIs('commesse.*') ? 'active' : '' }}">
-                <i class="bi bi-briefcase-fill"></i> Commesse
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('reports.index') }}"
-               class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-text-fill"></i> Report
-            </a>
-        </li>
-        <li class="nav-item ">
-            <a href="{{ route('eventi.index') }}"
-               class="nav-link {{ request()->routeIs('eventi.*') ? 'active' : '' }}">
-                <i class="bi bi-calendar-event-fill"></i> Calendario
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('attrezzature.index') }}"
-               class="nav-link {{ request()->routeIs('attrezzature.*') ? 'active' : '' }}">
-                <i class="bi bi-tools"></i> Attrezzature
-            </a>
-        </li>
+
+        {{-- AZIENDA & GESTIONE --}}
+        <li class="sidebar-section-title">Azienda & Gestione</li>
         <li class="nav-item">
             <a href="{{ route('personale.index') }}"
                class="nav-link {{ request()->routeIs('personale.*') ? 'active' : '' }}">
-                <i class="bi bi-people-fill"></i> Personale
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('offerte.index') }}"
-               class="nav-link {{ request()->routeIs('offerte.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-text-fill"></i> Offerte
+                <i class="bi bi-person-badge-fill"></i> Personale
             </a>
         </li>
         <li class="nav-item">
             <a href="{{ route('documenti.index') }}"
-               class="nav-link {{ request()->routeIs('documenti.*') ? 'active' : '' }}">
+               class="nav-link {{ request()->routeIs('documenti.*') || request()->routeIs('cartelle.*') ? 'active' : '' }}">
                 <i class="bi bi-folder2-open"></i> Documenti
             </a>
         </li>
@@ -165,7 +223,6 @@
                     <i class="bi bi-person-gear"></i> Gestione Utenti
                 </a>
             </li>
-
         @endif
     </ul>
     <div class="mt-auto p-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
