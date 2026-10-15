@@ -223,6 +223,11 @@
                     <i class="bi bi-person-gear"></i> Gestione Utenti
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('impostazioni.index') }}" class="nav-link {{ request()->routeIs('impostazioni.*') ? 'active' : '' }}">
+                    <i class="bi bi-sliders"></i> Impostazioni
+                </a>
+            </li>
         @endif
     </ul>
     <div class="mt-auto p-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">

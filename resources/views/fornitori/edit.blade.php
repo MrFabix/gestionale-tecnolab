@@ -196,6 +196,11 @@
                     </div>
 
                     <div class="col-12">
+                        <label class="form-label">Motivazione Cambio Qualifica <span class="text-muted small">(se lo stato viene modificato, verrà memorizzata nello storico PG04)</span></label>
+                        <input type="text" name="motivo_variazione" class="form-control" placeholder="Es. Riqualificazione annuale / Riesame documentazione / Cambio stato operativo...">
+                    </div>
+
+                    <div class="col-12">
                         <label class="form-label">Note Generali</label>
                         <textarea name="note" class="form-control" rows="2">{{ old('note', $fornitore->note) }}</textarea>
                     </div>

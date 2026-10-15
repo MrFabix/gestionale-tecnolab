@@ -10,6 +10,7 @@ use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\FornitoreController;
 use App\Http\Controllers\OffertaController;
 use App\Http\Controllers\OdaController;
+use App\Http\Controllers\ImpostazioneController;
 use App\Http\Controllers\PersonaleController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RdaController;
@@ -33,6 +34,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('fornitori/{fornitore}/forniture/{fornitura}', [FornitoreController::class, 'updateFornitura'])->name('fornitori.forniture.update');
     Route::delete('fornitori/{fornitore}/forniture/{fornitura}', [FornitoreController::class, 'destroyFornitura'])->name('fornitori.forniture.destroy');
     Route::delete('fornitori/{fornitore}/media/{mediaId}', [FornitoreController::class, 'destroyMedia'])->name('fornitori.media.destroy');
+    Route::post('fornitori/{fornitore}/cambia-stato-qualifica', [FornitoreController::class, 'cambiaStatoQualifica'])->name('fornitori.cambiaStatoQualifica');
 
     // Richieste di Acquisto (RDA - MD PG 04/01-00)
     Route::resource('rda', RdaController::class);
@@ -52,6 +54,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
     Route::get('/', [DashboardController::class, 'index'])->name('home');
+
+    // Impostazioni globali gestionale
+    Route::get('/impostazioni', [ImpostazioneController::class, 'index'])->name('impostazioni.index');
+    Route::post('/impostazioni', [ImpostazioneController::class, 'update'])->name('impostazioni.update');
+    Route::post('/impostazioni/verifica-inattivita', [ImpostazioneController::class, 'verificaInattivitaFornitori'])->name('impostazioni.verificaInattivita');
 
 
 

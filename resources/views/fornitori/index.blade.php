@@ -153,7 +153,12 @@
             <h1><i class="bi bi-truck me-2"></i> Registro Fornitori</h1>
             <p>Elenco fornitori qualificati, scheda MD PG04/04-00 e registro non conformità (RNC / RAC)</p>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
+            @if(Auth::check() && Auth::user()->ruolo === 'admin')
+                <a href="{{ route('impostazioni.index') }}" class="btn btn-outline-light fw-semibold px-3 py-2 shadow-sm" title="Gestisci soglia inattività e regole globali">
+                    <i class="bi bi-gear me-1"></i> Regole Qualifica
+                </a>
+            @endif
             <a href="{{ route('fornitori.create') }}" class="btn btn-danger fw-semibold px-3 py-2 shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> Nuovo Fornitore
             </a>
@@ -229,6 +234,8 @@
                    class="btn {{ request('stato')==='in_valutazione' ? 'btn-warning text-dark' : 'btn-outline-secondary' }}">In Valutaz.</a>
                 <a href="{{ route('fornitori.index', array_merge(request()->except('stato'), ['stato'=>'sospeso'])) }}"
                    class="btn {{ request('stato')==='sospeso' ? 'btn-danger text-white' : 'btn-outline-secondary' }}">Sospesi</a>
+                <a href="{{ route('fornitori.index', array_merge(request()->except('stato'), ['stato'=>'non_qualificato'])) }}"
+                   class="btn {{ request('stato')==='non_qualificato' ? 'btn-secondary text-white' : 'btn-outline-secondary' }}">Non Qualificati</a>
             </div>
         </div>
     </div>

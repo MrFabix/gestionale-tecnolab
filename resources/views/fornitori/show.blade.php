@@ -195,6 +195,10 @@
                 <i class="bi bi-patch-check-fill fs-6"></i> {{ $lblStato }}
             </div>
 
+            <button type="button" class="btn btn-outline-light fw-semibold" data-bs-toggle="modal" data-bs-target="#modalCambiaQualifica">
+                <i class="bi bi-sliders me-1"></i> Stato Qualifica
+            </button>
+
             <a href="{{ route('fornitori.downloadWord', $fornitore) }}" class="btn btn-primary fw-semibold shadow-sm" title="Scarica Scheda Word ufficiale MD PG04/04-00">
                 <i class="bi bi-file-earmark-word me-1"></i> Esporta Word (.doc)
             </a>
@@ -208,6 +212,34 @@
             </a>
         </div>
     </div>
+
+    {{-- Alert se fornitore non qualificato o inattivo --}}
+    @if($fornitore->stato_qualifica !== 'qualificato')
+        <div class="alert alert-warning border-warning d-flex align-items-center justify-content-between p-3 rounded-3 mb-4 shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-exclamation-triangle-fill fs-2 text-warning"></i>
+                <div>
+                    <h6 class="mb-1 fw-bold text-dark">Attenzione: Fornitore {{ $lblStato }}</h6>
+                    <div class="small text-muted">
+                        @if($ultimaDataAcquisto)
+                            Ultimo acquisto/ordine registrato: <strong>{{ $ultimaDataAcquisto->format('d/m/Y') }}</strong> ({{ $ultimaDataAcquisto->diffForHumans() }}).
+                        @else
+                            Nessun acquisto registrato a sistema. Data ammissione: {{ $fornitore->data_qualifica ? $fornitore->data_qualifica->format('d/m/Y') : 'non specificata' }}.
+                        @endif
+                        @php
+                            $ultimoStorico = $fornitore->storicoQualifica->first();
+                        @endphp
+                        @if($ultimoStorico && $ultimoStorico->motivo)
+                            <div class="mt-1 text-dark"><strong>Motivazione registrata:</strong> {{ $ultimoStorico->motivo }}</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-dark fw-semibold text-nowrap ms-3" data-bs-toggle="modal" data-bs-target="#modalCambiaQualifica">
+                <i class="bi bi-patch-check me-1"></i> Riqualifica / Cambia Stato
+            </button>
+        </div>
+    @endif
 
     {{-- ── 1. ESTREMI DEL FORNITORE (TABELLA 1) ── --}}
     <div class="section-card">
@@ -592,6 +624,134 @@
                     <i class="bi bi-upload me-1"></i> Carica Documento
                 </button>
             </form>
+        </div>
+    </div>
+
+    {{-- ── 5. STORICO QUALIFICA & VARIAZIONI DI STATO (TRACCIABILITÀ MD PG04) ── --}}
+    <div class="section-card">
+        <div class="section-card-header">
+            <div>
+                <h3 class="section-card-title">
+                    <i class="bi bi-clock-history text-danger"></i> 5. Storico Qualifica &amp; Variazioni di Stato (Tracciabilità MD PG04)
+                </h3>
+                <p class="text-muted small mb-0">Registro cronologico di ogni modifica dello stato di qualifica (automatico per inattività o manuale dagli operatori).</p>
+            </div>
+
+            <button type="button" class="btn btn-sm btn-outline-dark fw-semibold px-3 py-1" data-bs-toggle="modal" data-bs-target="#modalCambiaQualifica">
+                <i class="bi bi-pencil me-1"></i> Registra Variazione Stato
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 160px;">Data &amp; Ora</th>
+                        <th style="width: 140px;">Stato Prec.</th>
+                        <th style="width: 150px;">Nuovo Stato</th>
+                        <th style="width: 170px;">Tipo Evento</th>
+                        <th style="width: 160px;">Operatore</th>
+                        <th>Motivazione / Dettagli Procedura</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($fornitore->storicoQualifica as $st)
+                        <tr>
+                            <td class="mono fw-semibold">{{ $st->data_variazione ? $st->data_variazione->format('d/m/Y H:i') : '—' }}</td>
+                            <td>
+                                @if($st->stato_precedente)
+                                    <span class="badge {{ $st->getBadgeClass($st->stato_precedente) }}">
+                                        {{ $st->stato_precedente_label }}
+                                    </span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge {{ $st->getBadgeClass($st->stato_nuovo) }}">
+                                    {{ $st->stato_nuovo_label }}
+                                </span>
+                            </td>
+                            <td>
+                                @if($st->tipo_variazione === 'automatica')
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                        <i class="bi bi-robot me-1"></i> Automatica (Inattività)
+                                    </span>
+                                @elseif($st->tipo_variazione === 'creazione')
+                                    <span class="badge bg-secondary-subtle text-secondary border">
+                                        <i class="bi bi-plus-circle me-1"></i> Creazione
+                                    </span>
+                                @else
+                                    <span class="badge bg-info-subtle text-info-emphasis border">
+                                        <i class="bi bi-person me-1"></i> Manuale
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="fw-semibold text-dark">
+                                {{ $st->user?->name ?? ($st->tipo_variazione === 'automatica' ? 'Sistema Automatico' : '—') }}
+                            </td>
+                            <td>
+                                <div class="text-dark">{{ $st->motivo ?: '—' }}</div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                Nessuna variazione di qualifica ancora registrata.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {{-- ── MODAL CAMBIA STATO QUALIFICA ── --}}
+    <div class="modal fade" id="modalCambiaQualifica" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('fornitori.cambiaStatoQualifica', $fornitore) }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">
+                            <i class="bi bi-sliders text-danger me-1"></i> Variazione Stato Qualifica Fornitore
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Stato Qualifica Attuale</label>
+                            <div>
+                                <span class="badge {{ $fornitore->stato_qualifica === 'qualificato' ? 'bg-success' : 'bg-danger' }} fs-6">
+                                    {{ $lblStato }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Nuovo Stato di Qualifica <span class="text-danger">*</span></label>
+                            <select name="stato_qualifica" class="form-select" required>
+                                <option value="qualificato" {{ $fornitore->stato_qualifica === 'qualificato' ? 'selected' : '' }}>Qualificato</option>
+                                <option value="in_valutazione" {{ $fornitore->stato_qualifica === 'in_valutazione' ? 'selected' : '' }}>In Valutazione</option>
+                                <option value="sospeso" {{ $fornitore->stato_qualifica === 'sospeso' ? 'selected' : '' }}>Sospeso</option>
+                                <option value="non_qualificato" {{ $fornitore->stato_qualifica === 'non_qualificato' ? 'selected' : '' }}>Non Qualificato</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Motivazione della Variazione (Tracciata a Registro) <span class="text-danger">*</span></label>
+                            <textarea name="motivo_variazione" class="form-control" rows="3" placeholder="Es. Riqualificazione a seguito di riesame fornitore / Nuova fornitura conforme / Provvedimento qualità..." required></textarea>
+                            <div class="form-text">
+                                Questa motivazione verrà registrata in modo permanente nello storico della procedura MD PG04 con data, ora e operatore.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                        <button type="submit" class="btn btn-danger fw-semibold">Conferma e Registra</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

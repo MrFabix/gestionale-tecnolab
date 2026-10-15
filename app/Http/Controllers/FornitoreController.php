@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Fornitore;
 use App\Models\FornitoreFornitura;
+use App\Services\FornitoreQualificaService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
@@ -16,8 +18,11 @@ class FornitoreController extends Controller
     //  INDEX — Lista Fornitori
     // ══════════════════════════════════════════
 
-    public function index(Request $request)
+    public function index(Request $request, FornitoreQualificaService $qualificaService)
     {
+        // Esegui la verifica inattività per mantenere sincronizzati gli stati
+        $qualificaService->verificaTuttiFornitori();
+
         $query = Fornitore::with('forniture')->orderBy('ragione_sociale');
 
         // Filtro ricerca testo
@@ -108,6 +113,16 @@ class FornitoreController extends Controller
 
         $fornitore = Fornitore::create($data);
 
+        // Traccia nello storico di qualifica
+        $fornitore->storicoQualifica()->create([
+            'user_id'          => Auth::id(),
+            'stato_precedente' => null,
+            'stato_nuovo'      => $fornitore->stato_qualifica,
+            'tipo_variazione'  => 'creazione',
+            'motivo'           => 'Inserimento iniziale nel registro fornitori (MD PG04)',
+            'data_variazione'  => now(),
+        ]);
+
         // Upload documenti allegati
         if ($request->hasFile('documenti')) {
             foreach ($request->file('documenti') as $file) {
@@ -140,10 +155,18 @@ class FornitoreController extends Controller
 
     public function show(Fornitore $fornitore)
     {
-        $fornitore->load(['forniture.oda', 'ordiniAcquisto.righe']);
-        $documenti = $fornitore->getMedia('documenti');
+        // Verifica inattività per mantenere aggiornato lo stato del singolo fornitore
+        $fornitore->verificaESqualificaInattivita();
 
-        return view('fornitori.show', compact('fornitore', 'documenti'));
+        $fornitore->load([
+            'forniture.oda',
+            'ordiniAcquisto.righe',
+            'storicoQualifica.user'
+        ]);
+        $documenti = $fornitore->getMedia('documenti');
+        $ultimaDataAcquisto = $fornitore->getUltimaDataAcquisto();
+
+        return view('fornitori.show', compact('fornitore', 'documenti', 'ultimaDataAcquisto'));
     }
 
     // ══════════════════════════════════════════
@@ -180,13 +203,30 @@ class FornitoreController extends Controller
             'prodotti_acquistati'     => 'nullable|string',
             'criteri_qualifica'       => 'nullable|string',
             'stato_qualifica'         => 'required|in:qualificato,in_valutazione,sospeso,non_qualificato',
+            'motivo_variazione'       => 'nullable|string|max:1000',
             'data_qualifica'          => 'nullable|date',
             'data_scadenza_qualifica' => 'nullable|date',
             'note'                    => 'nullable|string',
             'documenti.*'             => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,webp|max:20480',
         ]);
 
+        $vecchioStato = $fornitore->stato_qualifica;
+        $nuovoStato = $data['stato_qualifica'];
+        unset($data['motivo_variazione']);
+
         $fornitore->update($data);
+
+        // Se lo stato di qualifica è cambiato, traccia nello storico
+        if ($vecchioStato !== $nuovoStato) {
+            $fornitore->storicoQualifica()->create([
+                'user_id'          => Auth::id(),
+                'stato_precedente' => $vecchioStato,
+                'stato_nuovo'      => $nuovoStato,
+                'tipo_variazione'  => 'manuale',
+                'motivo'           => $request->motivo_variazione ?: 'Aggiornamento manuale scheda fornitore',
+                'data_variazione'  => now(),
+            ]);
+        }
 
         // Upload nuovi documenti
         if ($request->hasFile('documenti')) {
@@ -199,6 +239,27 @@ class FornitoreController extends Controller
 
         return redirect()->route('fornitori.show', $fornitore)
             ->with('success', 'Scheda fornitore aggiornata con successo.');
+    }
+
+    /**
+     * Cambio rapido dello stato di qualifica con motivazione obbligatoria
+     */
+    public function cambiaStatoQualifica(Request $request, Fornitore $fornitore)
+    {
+        $request->validate([
+            'stato_qualifica'   => 'required|in:qualificato,in_valutazione,sospeso,non_qualificato',
+            'motivo_variazione' => 'required|string|max:1000',
+        ]);
+
+        $fornitore->cambiaStatoQualifica(
+            nuovoStato: $request->stato_qualifica,
+            motivo: $request->motivo_variazione,
+            userId: Auth::id(),
+            tipo: 'manuale'
+        );
+
+        return redirect()->back()
+            ->with('success', "Stato qualifica aggiornato a '{$fornitore->stato_qualifica}' con tracciamento nello storico.");
     }
 
     // ══════════════════════════════════════════
