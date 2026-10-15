@@ -7,9 +7,12 @@ use App\Http\Controllers\CommessaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CartellaController;
 use App\Http\Controllers\DocumentoController;
+use App\Http\Controllers\FornitoreController;
 use App\Http\Controllers\OffertaController;
+use App\Http\Controllers\OdaController;
 use App\Http\Controllers\PersonaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RdaController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +27,25 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('commesse', CommessaController::class)->parameters(['commesse' => 'commessa']);
     Route::resource('reports', ReportController::class); // resource completa
     Route::resource('clienti', ClienteController::class)->parameters(['clienti' => 'cliente']);
+    Route::resource('fornitori', FornitoreController::class)->parameters(['fornitori' => 'fornitore']);
+    Route::get('fornitori/{fornitore}/download-word', [FornitoreController::class, 'downloadWord'])->name('fornitori.downloadWord');
+    Route::post('fornitori/{fornitore}/forniture', [FornitoreController::class, 'storeFornitura'])->name('fornitori.forniture.store');
+    Route::put('fornitori/{fornitore}/forniture/{fornitura}', [FornitoreController::class, 'updateFornitura'])->name('fornitori.forniture.update');
+    Route::delete('fornitori/{fornitore}/forniture/{fornitura}', [FornitoreController::class, 'destroyFornitura'])->name('fornitori.forniture.destroy');
+    Route::delete('fornitori/{fornitore}/media/{mediaId}', [FornitoreController::class, 'destroyMedia'])->name('fornitori.media.destroy');
+
+    // Richieste di Acquisto (RDA - MD PG 04/01-00)
+    Route::resource('rda', RdaController::class);
+    Route::get('rda/{rda}/download-word', [RdaController::class, 'downloadWord'])->name('rda.downloadWord');
+    Route::post('rda/{rda}/cambia-stato', [RdaController::class, 'cambiaStato'])->name('rda.cambiaStato');
+    Route::get('rda/{rda}/genera-oda', [OdaController::class, 'wizardDaRda'])->name('rda.generaOda');
+    Route::post('rda/{rda}/genera-oda-singolo', [OdaController::class, 'storeDaRdaSingolo'])->name('rda.storeDaRdaSingolo');
+    Route::post('rda/{rda}/genera-oda-multipli', [OdaController::class, 'storeDaRdaMultipli'])->name('rda.storeDaRdaMultipli');
+
+    // Ordini di Acquisto (ODA - MD PG 04/02-00)
+    Route::resource('oda', OdaController::class);
+    Route::post('oda/{oda}/cambia-stato', [OdaController::class, 'cambiaStato'])->name('oda.cambiaStato');
+    Route::get('oda/{oda}/download-docx', [OdaController::class, 'downloadDocx'])->name('oda.downloadDocx');
     Route::get('/eventi/feed', [\App\Http\Controllers\EventController::class, 'feed'])->name('eventi.feed');
     Route::resource('eventi', \App\Http\Controllers\EventController::class);
 

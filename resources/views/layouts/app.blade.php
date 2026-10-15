@@ -100,6 +100,24 @@
             </a>
         </li>
         <li class="nav-item">
+            <a href="{{ route('fornitori.index') }}"
+               class="nav-link {{ request()->routeIs('fornitori.*') ? 'active' : '' }}">
+                <i class="bi bi-truck"></i> Fornitori
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('rda.index') }}"
+               class="nav-link {{ request()->routeIs('rda.*') ? 'active' : '' }}">
+                <i class="bi bi-cart-check-fill"></i> Richieste Acquisto (RDA)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('oda.index') }}"
+               class="nav-link {{ request()->routeIs('oda.*') ? 'active' : '' }}">
+                <i class="bi bi-bag-check-fill"></i> Ordini Acquisto (ODA)
+            </a>
+        </li>
+        <li class="nav-item">
             <a href="{{ route('commesse.index') }}"
                class="nav-link {{ request()->routeIs('commesse.*') ? 'active' : '' }}">
                 <i class="bi bi-briefcase-fill"></i> Commesse

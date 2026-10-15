@@ -108,6 +108,10 @@ class DashboardController extends Controller
         $countCommesse  = Commessa::where('stato', '!=', 'chiusa')->count(); // aperte o in lavorazione
         $countOfferte   = Offerta::whereIn('stato', ['bozza', 'inviata'])->count(); // in corso
         $countClienti   = Cliente::count();
+        $countFornitori = \App\Models\Fornitore::count();
+        $countRdaInAttesa = \App\Models\Rda::where('stato', 'in_attesa')->count();
+        $countRdaTotali = \App\Models\Rda::count();
+        $countOda = \App\Models\Oda::count();
         $countMacchine  = Attrezzatura::count();
         $countPersonale = Personale::count();
         $countDocumenti = Documento::count();
@@ -120,7 +124,7 @@ class DashboardController extends Controller
             'totaleScaduti', 'totaleInScadenza', 'nAlert',
             'prossimiEventi',
             'countReport', 'countCommesse', 'countOfferte',
-            'countClienti', 'countMacchine', 'countPersonale', 'countDocumenti'
+            'countClienti', 'countFornitori', 'countRdaInAttesa', 'countRdaTotali', 'countOda', 'countMacchine', 'countPersonale', 'countDocumenti'
         ));
     }
 }

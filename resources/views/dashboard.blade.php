@@ -430,6 +430,45 @@
                 </div>
             </a>
 
+            {{-- Fornitori --}}
+            <a href="{{ route('fornitori.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #fef2f2; color: #b91c1c;">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Fornitori</div>
+                    <div class="quick-subtitle">{{ $countFornitori ?? 0 }} qualificati</div>
+                </div>
+            </a>
+
+            {{-- Richieste Acquisto (RDA) --}}
+            <a href="{{ route('rda.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #fff1f2; color: #e11d48;">
+                    <i class="bi bi-cart-check"></i>
+                </div>
+                <div>
+                    <div class="quick-title">RDA Acquisti</div>
+                    <div class="quick-subtitle">
+                        @if(($countRdaInAttesa ?? 0) > 0)
+                            <span class="badge bg-danger rounded-pill">{{ $countRdaInAttesa }} in attesa</span>
+                        @else
+                            {{ $countRdaTotali ?? 0 }} richieste
+                        @endif
+                    </div>
+                </div>
+            </a>
+
+            {{-- Ordini Acquisto (ODA) --}}
+            <a href="{{ route('oda.index') }}" class="quick-btn-card">
+                <div class="quick-icon" style="background: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-bag-check-fill"></i>
+                </div>
+                <div>
+                    <div class="quick-title">Ordini ODA</div>
+                    <div class="quick-subtitle">{{ $countOda ?? 0 }} emessi</div>
+                </div>
+            </a>
+
             {{-- Documenti --}}
             <a href="{{ route('documenti.index') }}" class="quick-btn-card">
                 <div class="quick-icon" style="background: #f3e8ff; color: #7e22ce;">
